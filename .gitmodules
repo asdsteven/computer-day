@@ -1,3 +1,6 @@
 [submodule "scratch-blocks-dshk"]
 	path = scratch-blocks-dshk
 	url = git@github.com:asdsteven/scratch-blocks-dshk.git
+[submodule "client/scratch-blocks"]
+	path = client/scratch-blocks
+	url = https://github.com/asdsteven/scratch-blocks-dshk.git
