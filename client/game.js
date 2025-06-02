@@ -11,23 +11,39 @@ class ClassroomScene extends Phaser.Scene {
         loadImage('corridor');
         loadImage('wall');
         loadImage('floor');
+        loadImage('floor2');
         loadImage('door');
-        this.load.image('student', 'assets/student.png');  // Example player asset
+        this.load.spritesheet('student', 'assets/character_maleAdventurer_sheet.png', {
+            frameWidth: 96,
+            frameHeight: 128
+        });
     }
 
     create() {
-        const width = TILE_SIZE * 12;
-        const height = TILE_SIZE * 6;
+        const corridorSize = this.corridorSize = TILE_SIZE * 2;
+        const width = this.classroomWidth = TILE_SIZE * 12;
+        const height = this.classroomHeight = TILE_SIZE * 6;
         const corridor = this.textures.get('corridor').source[0];
         const wall = this.textures.get('wall').source[0];
         const door = this.textures.get('door').source[0];
-        this.add.image(0, 0, 'corridor').setOrigin(0).setDisplaySize(width, corridor.height / corridor.width * width);
-        this.add.tileSprite(0, 0, width, wall.height, 'wall').setOrigin(0);
-        this.add.tileSprite(0, wall.height, width, height, 'floor').setOrigin(0);
-        this.add.tileSprite(0, height, width - door.width, wall.height, 'wall').setOrigin(0);
-        this.add.image(width - door.width, height, 'door').setOrigin(0);
-        this.player = this.physics.add.sprite(TILE_SIZE * 3, TILE_SIZE * 3, 'student');
-        this.player.setOrigin(0.5, 0.5);
+
+        let x = 0;
+        let y = 0;
+        this.add.tileSprite(x, y, width + corridorSize * 2, height + corridorSize * 2, 'floor2').setOrigin(0);
+        x += corridorSize;
+        y += corridorSize - wall.height;
+        this.add.tileSprite(x, y, width, wall.height, 'wall').setOrigin(0);
+        y += wall.height;
+        this.add.tileSprite(x, y, width, height, 'floor').setOrigin(0);
+        y += height - wall.height;
+        this.add.tileSprite(x, y, width - door.width, wall.height, 'wall').setOrigin(0);
+        x += width - door.width
+        this.add.image(x, y, 'door').setOrigin(0);
+
+        this.classroomX = corridorSize;
+        this.classroomY = corridorSize;
+        this.player = this.add.sprite(this.classroomX + TILE_SIZE * 3, this.classroomY + TILE_SIZE * 3, 'student');
+        this.player.setOrigin(0, 1);
         this.currentRow = 3;
         this.currentCol = 3;
         this.moving = false; // Prevent multiple movements at once
@@ -56,8 +72,8 @@ class ClassroomScene extends Phaser.Scene {
 
         this.tweens.add({
             targets: this.player,
-            x: this.currentCol * this.gridSize,
-            y: this.currentRow * this.gridSize,
+            x: this.classroomX + this.currentCol * this.gridSize,
+            y: this.classroomY + this.currentRow * this.gridSize,
             duration: 300,
             onComplete: () => {
                 this.moving = false;
@@ -69,22 +85,17 @@ class ClassroomScene extends Phaser.Scene {
 const config = {
     type: Phaser.AUTO,
     parent: 'phaser',
-    width: window.innerWidth,
-    height: window.innerHeight - 200,
+    width: 16 * TILE_SIZE,
+    height: 10 * TILE_SIZE,
     scene: ClassroomScene,
     physics: {
         default: 'arcade',
         arcade: { gravity: { y: 0 } }
     },
     scale: {
-        mode: Phaser.Scale.RESIZE,  // Makes the game adjust on resize
+        mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH  // Centers it properly
     }
 };
 
 const game = new Phaser.Game(config);
-
-window.addEventListener('resize', () => {
-    game.scale.resize(window.innerWidth, window.innerHeight - 200);
-});
-
