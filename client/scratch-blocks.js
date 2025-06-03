@@ -39,16 +39,16 @@ Blockly.OpCode.scrub_ = function(block, code, opt_thisOnly) {
     return code + nextCode;
 };
 Blockly.OpCode['event_whenflagclicked'] = function(block) {
-    return '';
+    return `#"${block.id}"`;
 };
 Blockly.OpCode['forward'] = function(block) {
-    return '^';
+    return `^"${block.id}"`;
 };
 Blockly.OpCode['turn_left'] = function(block) {
-    return '<';
+    return `<"${block.id}"`;
 };
 Blockly.OpCode['turn_right'] = function(block) {
-    return '>';
+    return `>"${block.id}"`;
 };
 Blockly.OpCode['math_whole_number'] = function(block) {
     return [String(Number(block.getFieldValue('NUM'))), 0];
@@ -63,7 +63,7 @@ Blockly.OpCode['control_repeat'] = function(block) {
         var repeats = Blockly.OpCode.valueToCode(block, 'TIMES', 0);
     }
     var branch = Blockly.OpCode.statementToCode(block, 'SUBSTACK');
-    return `(${repeats}${branch})`;
+    return `(${repeats}"${block.id}"${branch})`;
 };
 Blockly.OpCode.greenFlagToCode = function() {
     const workspace = Blockly.getMainWorkspace();
@@ -88,3 +88,4 @@ greenFlag.setMovable(false);
 greenFlag.setDeletable(false);
 greenFlag.initSvg();
 greenFlag.render();
+greenFlag.moveBy(10, 30);
