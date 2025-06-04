@@ -10,7 +10,57 @@
     <body style="margin:0;overflow:hidden">
         <div id="gameCanvas" style="width:100vw;height:100vh"></div>
         <script>
+         const avatars = ['lpcboy2.png','lpcboy3.png','lpcboy4.png','lpcboy5.png','lpcboy9.png','lpcgirl1.png','lpcgirl11.png','lpcgirl2.png','lpcgirl3.png','lpcgirl4.png'];
+
          const socket = io();
+
+         class AvatarScene extends Phaser.Scene {
+             constructor() {
+                 super("AvatarSelection");
+             }
+
+             preload() {
+                 this.load.image("track", "assets/quick-track.png");
+                 for (const avatar of avatars) {
+                     this.load.spritesheet(avatar, 'assets/' + avatar, {
+                         frameWidth: 128,
+                         frameHeight: 128
+                     });
+                 }
+             }
+
+             create() {
+                 this.add.image(0, 0, "track").setOrigin(0);
+                 this.add.text(512, 200, "Choose Your Avatar", {
+                     fontSize: "80px",
+                     color: "#fff",
+                     backgroundColor: "#000",
+                     padding: { x: 20, y: 10 }
+                 }).setOrigin(0.5);
+                 for (const avatar of avatars) {
+                     this.anims.create({
+                         key: "dance-" + avatar,
+                         frames: this.anims.generateFrameNumbers(avatar, { start: 0, end: 35 }),
+                         frameRate: Phaser.Math.Between(8, 15),
+                         repeat: -1 // Loop indefinitely
+                     });
+                 }
+                 for (const [i, avatar] of avatars.slice(0, 5).entries()) {
+                     this.add.sprite(100 + i * 150, 300, avatar, 9).setInteractive().play('dance-' + avatar).on('pointerdown', () => {
+                         this.selectAvatar(avatar);
+                     });
+                 }
+                 for (const [i, avatar] of avatars.slice(5, 10).entries()) {
+                     this.add.sprite(100 + i * 150, 400, avatar, 9).setInteractive().play('dance-' + avatar).on('pointerdown', () => {
+                         this.selectAvatar(avatar);
+                     });
+                 }
+             }
+
+             selectAvatar(avatar) {
+                 this.scene.start("QuickScene", { selectedAvatar: avatar });
+             }
+         }
 
          class QuickScene extends Phaser.Scene {
              constructor() {
@@ -19,14 +69,16 @@
 
              preload() {
                  this.load.image("track", "assets/quick-track.png");
-                 this.load.spritesheet('student', 'assets/lpc.png', {
-                     frameWidth: 128,
-                     frameHeight: 128
-                 });
+                 for (const avatar of avatars) {
+                     this.load.spritesheet(avatar, 'assets/' + avatar, {
+                         frameWidth: 128,
+                         frameHeight: 128
+                     });
+                 }
              }
 
              async join() {
-                 const [players, index, question] = await socket.emitWithAck("join", "student");
+                 const [players, index, question] = await socket.emitWithAck("join", this.avatar);
                  this.players = [];
                  this.question = question;
                  this.progress = 0;
@@ -40,8 +92,8 @@
                          this.players.push(this.add.sprite(
                              50 + 950 * player.progress / Math.max(1, this.question.length),
                              350,
-                             player.sprite
-                         ).play("walk"));
+                             player.avatar
+                         ).play("walk-" + player.avatar));
                      } else {
                          this.players.push(null);
                      }
@@ -57,9 +109,18 @@
                      }
                      player.y = 300 + 500 * (i + 1) / (this.players.length + 1);
                  }
+                 this.you.y = this.players[this.index].y + 20;
              }
 
              async walk(index, progress) {
+                 if (index == this.index) {
+                     this.tweens.add({
+                         targets: this.you,
+                         x: 50 + 950 * progress / Math.max(1, this.question.length) - 5,
+                         duration: 300,
+                         ease: "Cubic.EaseOut"
+                     });
+                 }
                  return new Promise(res => {
                      this.tweens.add({
                          targets: this.players[index],
@@ -71,13 +132,16 @@
                  });
              }
 
-             create() {
-                 this.anims.create({
-                     key: "walk",
-                     frames: this.anims.generateFrameNumbers("student", { start: 28, end: 35 }),
-                     frameRate: Phaser.Math.Between(8, 15),
-                     repeat: -1 // Loop indefinitely
-                 });
+             create(data) {
+                 this.avatar = data.selectedAvatar;
+                 for (const avatar of avatars) {
+                     this.anims.create({
+                         key: "walk-" + avatar,
+                         frames: this.anims.generateFrameNumbers(avatar, { start: 28, end: 35 }),
+                         frameRate: Phaser.Math.Between(8, 15),
+                         repeat: -1 // Loop indefinitely
+                     });
+                 }
                  this.add.image(0, 0, "track").setOrigin(0);
                  this.text = this.add.text(512, 200, "準備", {
                      fontSize: "80px",
@@ -85,6 +149,10 @@
                      backgroundColor: "#000",
                      padding: { x: 20, y: 10 }
                  }).setOrigin(0.5);
+                 this.you = this.add.text(45, 0, "You", {
+                     fontSize: "60px",
+                     color: "#5f5"
+                 }).setOrigin(1, 0.5);
 
                  this.players = []
                  this.question = [];
@@ -118,13 +186,13 @@
                      this.join();
                      console.log(`reconnect ${attempt}`);
                  });
-                 socket.on("newPlayer", (index, sprite) => {
+                 socket.on("newPlayer", (index, avatar) => {
                      while (this.players.length <= index) {
                          this.players.push(null);
                      }
-                     this.players[index] = this.add.sprite(50, 350, sprite).play("walk");
+                     this.players[index] = this.add.sprite(50, 350, avatar).play("walk-" + avatar);
                      this.verticalDistribute();
-                     console.log(`newPlayer ${index} ${sprite}`);
+                     console.log(`newPlayer ${index} ${avatar}`);
                  });
                  socket.on("deletePlayer", index => {
                      this.players[index].destroy();
@@ -138,6 +206,7 @@
                  socket.on("newRound", question => {
                      this.question = question;
                      this.progress = 0;
+                     this.you.x = 45;
                      this.text.setText(this.question[0]);
                      input.value = "";
                      for (const player of this.players) {
@@ -161,7 +230,7 @@
              parent: "gameCanvas",
              width: 1024,
              height: 1024,
-             scene: QuickScene,
+             scene: [AvatarScene, QuickScene],
              scale: {
                  mode: Phaser.Scale.FIT,
                  autoCenter: Phaser.Scale.CENTER_BOTH

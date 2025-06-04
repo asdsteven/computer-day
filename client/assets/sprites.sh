@@ -8,7 +8,10 @@ classroom() {
 }
 
 lpc() {
-    convert lpc-raw.png -crop 576x256+0+512 -scale 200% lpc.png
+    for i in raw-*.png
+    do
+        convert $i -crop 576x256+0+512 -scale 200% ${i##raw-}
+    done
 }
 
 buttons() {
@@ -16,4 +19,4 @@ buttons() {
     convert -size 60x60 xc:transparent -fill white -stroke transparent -draw "roundrectangle 0,0 60,60 10,10" \( ../scratch-blocks/media/green-flag.svg -resize 40x40 \) -gravity center -composite start.png
 }
 
-buttons
+lpc

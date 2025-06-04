@@ -11,12 +11,12 @@ function onConnection(io, socket) {
         socket.broadcast.emit('newRound', question);
     });
 
-    socket.on('join', (sprite, callback) => {
+    socket.on('join', (avatar, callback) => {
         for (let i = 0; ; i++) {
             if (i == players.length) {
                 players.push({
                     progress: 0,
-                    sprite: sprite
+                    avatar: avatar
                 });
                 playerIndex.set(socket.id, i);
                 break;
@@ -24,14 +24,14 @@ function onConnection(io, socket) {
             if (!players[i]) {
                 players[i] = {
                     progress: 0,
-                    sprite: sprite
+                    avatar: avatar
                 };
                 playerIndex.set(socket.id, i);
                 break;
             }
         }
         callback([players, playerIndex.get(socket.id), question]);
-        socket.broadcast.emit('newPlayer', playerIndex.get(socket.id), sprite);
+        socket.broadcast.emit('newPlayer', playerIndex.get(socket.id), avatar);
         console.log(`join at ${playerIndex.get(socket.id)}`);
         console.log(players);
     });
