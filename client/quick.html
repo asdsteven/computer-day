@@ -41,7 +41,7 @@
                              50 + 950 * player.progress / Math.max(1, this.question.length),
                              350,
                              player.sprite
-                         ));
+                         ).play("walk"));
                      } else {
                          this.players.push(null);
                      }
@@ -59,7 +59,25 @@
                  }
              }
 
+             async walk(index, progress) {
+                 return new Promise(res => {
+                     this.tweens.add({
+                         targets: this.players[index],
+                         x: 50 + 950 * progress / Math.max(1, this.question.length),
+                         duration: 300,
+                         ease: "Cubic.EaseOut",
+                         onComplete: res
+                     });
+                 });
+             }
+
              create() {
+                 this.anims.create({
+                     key: "walk",
+                     frames: this.anims.generateFrameNumbers("student", { start: 28, end: 35 }),
+                     frameRate: Phaser.Math.Between(8, 15),
+                     repeat: -1 // Loop indefinitely
+                 });
                  this.add.image(0, 0, "track").setOrigin(0);
                  this.text = this.add.text(512, 200, "準備", {
                      fontSize: "80px",
@@ -76,7 +94,7 @@
                  document.body.appendChild(input);
                  input.style = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:30px;border:2px solid #555;background:white;width:200px;padding:15px';
                  input.placeholder = 'Type here...';
-                 input.addEventListener("input", (event) => {
+                 input.addEventListener("input", async (event) => {
                      if (this.progress >= this.question.length) {
                          return;
                      }
@@ -92,8 +110,8 @@
                      }
                      input.value = "";
                      console.log(`input ${this.index}`);
-                     this.players[this.index].x = 50 + 950 * this.progress / Math.max(1, this.question.length);
                      socket.emit("progress", this.progress);
+                     await this.walk(this.index, this.progress);
                  });
 
                  socket.on("reconnect", attempt => {
@@ -104,7 +122,7 @@
                      while (this.players.length <= index) {
                          this.players.push(null);
                      }
-                     this.players[index] = this.add.sprite(50, 350, sprite);
+                     this.players[index] = this.add.sprite(50, 350, sprite).play("walk");
                      this.verticalDistribute();
                      console.log(`newPlayer ${index} ${sprite}`);
                  });
@@ -127,9 +145,9 @@
                      }
                      console.log(this.question);
                  });
-                 socket.on("progress", (index, progress) => {
-                     this.players[index].x = 50 + 950 * progress / Math.max(1, this.question.length);
+                 socket.on("progress", async (index, progress) => {
                      console.log(`progress ${index} ${progress}`);
+                     await this.walk(index, progress);
                  });
 
                  this.join();
