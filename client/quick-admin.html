@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Admin Panel</title>
+        <script src="/socket.io/socket.io.js"></script>
+    </head>
+    <body>
+        <h1>Game Admin Panel</h1>
+        <button id="newRound">Start New Round</button>
+
+        <script>
+         const socket = io(); // Connect to server
+
+         const dict = [
+             '明休仙找扣吐如針釦杜',
+             '早士古呆杏旦王天下思',
+             '略增指描唱娃錯借棧桔'
+         ];
+
+         function getRandomCharacters(count) {
+             const result = [];
+
+             dict.forEach(group => {
+                 const characters = group.split(''); // Convert string into an array of characters
+                 const shuffled = characters.sort(() => Math.random() - 0.5); // Randomize order
+                 result.push(...shuffled.slice(0, count)); // Pick the first 5 random characters
+             });
+
+             return result;
+         }
+
+         document.getElementById("newRound").addEventListener("click", () => {
+             socket.emit("newRound", getRandomCharacters(5)); // Send command to server
+             alert("New round started! Players will receive a new challenge.");
+         });
+        </script>
+    </body>
+</html>

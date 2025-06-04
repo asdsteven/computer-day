@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>Typing Race Game</title>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+    </head>
+    <body style="margin:0;overflow:hidden">
+        <div id="gameCanvas" style="width:100vw;height:100vh"></div>
+        <script>
+         const socket = io();
+
+         class QuickScene extends Phaser.Scene {
+             constructor() {
+                 super('QuickScene');
+             }
+
+             preload() {
+                 this.load.image("track", "assets/quick-track.png");
+                 this.load.spritesheet('student', 'assets/lpc.png', {
+                     frameWidth: 128,
+                     frameHeight: 128
+                 });
+             }
+
+             async join() {
+                 const [players, index, question] = await socket.emitWithAck("join", "student");
+                 this.players = [];
+                 this.question = question;
+                 this.progress = 0;
+                 if (question.length > 0) {
+                     this.text.setText(this.question[0]);
+                 }
+                 this.index = index;
+                 console.log(`join ${this.index} ${question}`);
+                 for (const [i, player] of players.entries()) {
+                     if (player) {
+                         this.players.push(this.add.sprite(
+                             50 + 950 * player.progress / Math.max(1, this.question.length),
+                             350,
+                             player.sprite
+                         ));
+                     } else {
+                         this.players.push(null);
+                     }
+                 }
+                 this.verticalDistribute();
+                 console.log(players);
+             }
+
+             verticalDistribute() {
+                 for (const [i, player] of this.players.entries()) {
+                     if (!player) {
+                         continue;
+                     }
+                     player.y = 300 + 500 * (i + 1) / (this.players.length + 1);
+                 }
+             }
+
+             create() {
+                 this.add.image(0, 0, "track").setOrigin(0);
+                 this.text = this.add.text(512, 200, "準備", {
+                     fontSize: "80px",
+                     color: "#fff",
+                     backgroundColor: "#000",
+                     padding: { x: 20, y: 10 }
+                 }).setOrigin(0.5);
+
+                 this.players = []
+                 this.question = [];
+                 this.progress = 0;
+
+                 const input = document.createElement("input");
+                 document.body.appendChild(input);
+                 input.style = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:30px;border:2px solid #555;background:white;width:200px;padding:15px';
+                 input.placeholder = 'Type here...';
+                 input.addEventListener("input", (event) => {
+                     if (this.progress >= this.question.length) {
+                         return;
+                     }
+                     const typed = event.target.value.split('');
+                     if (!typed.includes(this.question[this.progress])) {
+                         return;
+                     }
+                     this.progress++;
+                     if (this.progress < this.question.length) {
+                         this.text.setText(this.question[this.progress]);
+                     } else {
+                         this.text.setText("完成了！");
+                     }
+                     input.value = "";
+                     console.log(`input ${this.index}`);
+                     this.players[this.index].x = 50 + 950 * this.progress / Math.max(1, this.question.length);
+                     socket.emit("progress", this.progress);
+                 });
+
+                 socket.on("reconnect", attempt => {
+                     this.join();
+                     console.log(`reconnect ${attempt}`);
+                 });
+                 socket.on("newPlayer", (index, sprite) => {
+                     while (this.players.length <= index) {
+                         this.players.push(null);
+                     }
+                     this.players[index] = this.add.sprite(50, 350, sprite);
+                     this.verticalDistribute();
+                     console.log(`newPlayer ${index} ${sprite}`);
+                 });
+                 socket.on("deletePlayer", index => {
+                     this.players[index].destroy();
+                     this.players[index] = null;
+                     while (!this.players.at(-1)) {
+                         this.players.pop();
+                     }
+                     this.verticalDistribute();
+                     console.log(`deletePlayer ${index}`);
+                 });
+                 socket.on("newRound", question => {
+                     this.question = question;
+                     this.progress = 0;
+                     this.text.setText(this.question[0]);
+                     input.value = "";
+                     for (const player of this.players) {
+                         player.x = 50;
+                     }
+                     console.log(this.question);
+                 });
+                 socket.on("progress", (index, progress) => {
+                     this.players[index].x = 50 + 950 * progress / Math.max(1, this.question.length);
+                     console.log(`progress ${index} ${progress}`);
+                 });
+
+                 this.join();
+             }
+
+             update() {}
+         }
+
+         const config = {
+             type: Phaser.AUTO,
+             parent: "gameCanvas",
+             width: 1024,
+             height: 1024,
+             scene: QuickScene,
+             scale: {
+                 mode: Phaser.Scale.FIT,
+                 autoCenter: Phaser.Scale.CENTER_BOTH
+             }
+
+         };
+
+         const game = new Phaser.Game(config);
+        </script>
+    </body>
+</html>
