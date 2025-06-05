@@ -144,6 +144,7 @@
                  }
                  this.add.image(0, 0, "track").setOrigin(0);
                  this.text = this.add.text(512, 200, "準備", {
+                     fontFamily: "DFKai-SB",
                      fontSize: "80px",
                      color: "#fff",
                      backgroundColor: "#000",
@@ -197,7 +198,7 @@
                  socket.on("deletePlayer", index => {
                      this.players[index].destroy();
                      this.players[index] = null;
-                     while (!this.players.at(-1)) {
+                     while (this.players.length > 0 && !this.players.at(-1)) {
                          this.players.pop();
                      }
                      this.verticalDistribute();

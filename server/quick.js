@@ -36,6 +36,9 @@ function onConnection(io, socket) {
         console.log(players);
     });
     socket.on("progress", progress => {
+        if (!playerIndex.has(socket.id)) {
+            return;
+        }
         const i = playerIndex.get(socket.id);
         players[i].progress = progress;
         console.log(`progress ${i} = ${progress}`);
@@ -49,7 +52,7 @@ function onConnection(io, socket) {
         const i = playerIndex.get(socket.id);
         playerIndex.delete(socket.id);
         players[i] = null;
-        while (!players.at(-1)) {
+        while (players.length > 0 && !players.at(-1)) {
             players.pop();
         }
         console.log(players);

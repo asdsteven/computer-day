@@ -7,32 +7,53 @@
     </head>
     <body>
         <h1>Game Admin Panel</h1>
-        <button id="newRound">Start New Round</button>
+        <button id="round1">Round 1</button>
+        <button id="round2">Round 2</button>
+        <button id="round3">Round 3</button>
+        <button id="round4">Round 4</button>
+        <button id="round5">Round 5</button>
 
         <script>
          const socket = io(); // Connect to server
 
          const dict = [
-             '明休仙找扣吐如針釦杜',
-             '早士古呆杏旦王天下思',
-             '略增指描唱娃錯借棧桔'
+             '日月金木水火土竹戈十大中一弓人心手口尸廿山女田卜',
+             '明休仙找扣吐如針釦杜伙什仲仁仆扑錯',
+             '早古呆杏旦王天下思果干',
+             '略增指描唱娃錯借棧桔抬招按擋拆啖吹哈噹娟娃棧檔格棵梢唱唸吠',
+             '焚簪答崩炭崖岩弩怒恕您層屑屋局居本來簡箇笑答竺單咽啊'
          ];
+         let question = null;
 
-         function getRandomCharacters(count) {
+         function getRandomCharacters(i, count) {
              const result = [];
 
-             dict.forEach(group => {
-                 const characters = group.split(''); // Convert string into an array of characters
-                 const shuffled = characters.sort(() => Math.random() - 0.5); // Randomize order
-                 result.push(...shuffled.slice(0, count)); // Pick the first 5 random characters
-             });
-
+             const characters = dict[i].split(''); // Convert string into an array of characters
+             const shuffled = characters.sort(() => Math.random() - 0.5); // Randomize order
+             result.push(...shuffled.slice(0, count)); // Pick the first 5 random characters
+             question = result.join('');
              return result;
          }
 
-         document.getElementById("newRound").addEventListener("click", () => {
-             socket.emit("newRound", getRandomCharacters(5)); // Send command to server
-             alert("New round started! Players will receive a new challenge.");
+         document.getElementById("round1").addEventListener("click", () => {
+             socket.emit("newRound", getRandomCharacters(0, 7)); // Send command to server
+             alert(`${question}`);
+         });
+         document.getElementById("round2").addEventListener("click", () => {
+             socket.emit("newRound", getRandomCharacters(1, 7)); // Send command to server
+             alert(`${question}`);
+         });
+         document.getElementById("round3").addEventListener("click", () => {
+             socket.emit("newRound", getRandomCharacters(2, 7)); // Send command to server
+             alert(`${question}`);
+         });
+         document.getElementById("round4").addEventListener("click", () => {
+             socket.emit("newRound", getRandomCharacters(3, 7)); // Send command to server
+             alert(`${question}`);
+         });
+         document.getElementById("round5").addEventListener("click", () => {
+             socket.emit("newRound", getRandomCharacters(4, 7)); // Send command to server
+             alert(`${question}`);
          });
         </script>
     </body>
