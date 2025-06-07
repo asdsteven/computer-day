@@ -14,6 +14,8 @@ class ClassroomScene extends Phaser.Scene {
         const loadImage = (image) => this.load.image(image, 'assets/' + image + '.png');
         loadImage('corridor');
         loadImage('wall');
+        loadImage('wall-side');
+        loadImage('wall-side-bottom');
         loadImage('floor');
         loadImage('door');
         loadImage('start');
@@ -92,15 +94,18 @@ class ClassroomScene extends Phaser.Scene {
             });
         }
 
-        const corridor = textures.get('corridor').source[0];
-        const wall = textures.get('wall').source[0];
-        const door = textures.get('door').source[0];
+        const corridor = textures.get('corridor').getSourceImage();
+        const wall = textures.get('wall').getSourceImage();
+        const wallSide = textures.get('wall-side').getSourceImage();
+        const wallSideBottom = textures.get('wall-side-bottom').getSourceImage();
+        const door = textures.get('door').getSourceImage();
+        const grass = textures.getFrame('grass', 0);
 
         // Draw background
         let x = 0;
         let y = 0;
-        for (let yy = 0; yy < classroomHeight + corridorHeight * 2; yy += 32) {
-            for (let xx = 0; xx < classroomWidth + corridorWidth * 2; xx += 32) {
+        for (let yy = 0; yy < classroomHeight + corridorHeight * 2; yy += grass.height) {
+            for (let xx = 0; xx < classroomWidth + corridorWidth * 2; xx += grass.width) {
                 add.sprite(xx, yy, 'grass', Phaser.Math.RND.pick([0, 0, 0, 0, 0, 0, 9, 9, 9, 18]))
                    .setOrigin(0).setDepth(-1);
             }
@@ -111,6 +116,12 @@ class ClassroomScene extends Phaser.Scene {
         y += corridorHeight - wall.height;
         add.tileSprite(x, y, classroomWidth, wall.height, 'wall')
            .setOrigin(0).setDepth(-1);
+
+        // Draw side wall
+        add.tileSprite(x - wallSide.width, y, wallSide.width, classroomHeight + wall.height - wallSideBottom.height, 'wall-side')
+           .setOrigin(0).setDepth(2);
+        add.tileSprite(x + classroomWidth, y, wallSide.width, classroomHeight + wall.height - wallSideBottom.height, 'wall-side')
+           .setOrigin(0).setDepth(2);
 
         // Draw classroom floor
         y += wall.height;
@@ -129,9 +140,18 @@ class ClassroomScene extends Phaser.Scene {
         add.tileSprite(x, y, classroomWidth - door.width, wall.height, 'wall')
            .setOrigin(0).setDepth(2);
 
+        // Draw bottom left wall
+        add.image(x - wallSideBottom.width, y + wall.height - wallSideBottom.height, 'wall-side-bottom')
+           .setOrigin(0).setDepth(2);
+
         // Draw bottom door
         x += classroomWidth - door.width;
         add.image(x, y, 'door')
+           .setOrigin(0).setDepth(2);
+
+        // Draw bottom right wall
+        x += door.width;
+        add.image(x, y + wall.height - wallSideBottom.height, 'wall-side-bottom')
            .setOrigin(0).setDepth(2);
 
         this.cursors = input.keyboard.createCursorKeys();

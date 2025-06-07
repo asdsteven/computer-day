@@ -2,12 +2,27 @@
 # https://styloo.itch.io/2dclassroom
 
 classroom() {
-    convert '2dClassroomAssetPackByStyloo/WallFloorDoor second version tiling/strokespritesheet20121.png' -alpha extract -threshold 10% -define connected-components:verbose=true -connected-components 8 -auto-level info:
-    # convert '2dClassroomAssetPackByStyloo/WallFloorDoor second version tiling/strokespritesheet20121.png' -crop 248x201+74+740 -scale 50% wall_top.png
-    convert '2dClassroomAssetPackByStyloo/WallFloorDoor second version tiling/strokespritesheet20121.png' -crop 248x145+454+55 floor.png
-    convert '2dClassroomAssetPackByStyloo/WallFloorDoor second version tiling/strokespritesheet20121.png' -crop 248x145+62+55  floor2.png
-    convert '2dClassroomAssetPackByStyloo/WallFloorDoor second version tiling/strokespritesheet20121.png' -crop 248x202+74+359 -scale 50% door.png
-    convert '2dClassroomAssetPackByStyloo/WallFloorDoor second version tiling/strokespritesheet20129.png' -crop 249x200+71+91  -scale 50% wall.png
+    cd 2dClassroomAssetPackByStyloo
+    convert 'WallFloorDoorWstroke/WallFloorDoorW second spritesheet 1.png' \
+            -alpha extract -threshold 10% \
+            -define connected-components:verbose=true -connected-components 8 \
+            -auto-level info:
+    convert 'WallFloorDoor second version tiling/strokespritesheet20121.png' \
+            -crop 248x145+454+55 ../floor.png
+    # convert 'WallFloorDoor second version tiling/strokespritesheet20121.png' \
+    #         -crop 248x145+62+55  floor2.png
+    # convert 'WallFloorDoor second version tiling/strokespritesheet20121.png' \
+    #         -crop 248x200+74+360 -scale 50% ../door.png
+    # convert 'WallFloorDoor second version tiling/strokespritesheet20129.png' \
+    #         -crop 248x200+72+91  -scale 50% ../wall.png
+    convert 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 1.png' \
+            -crop 248x208+74+352 -scale 50% ../door.png
+    convert 'WallFloorDoorWstroke/WallFloorDoorW second spritesheet 1.png' \
+            -crop 248x208+72+84 -scale 50% ../wall.png
+    convert 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 3.png' \
+            -crop 8x144+194+665 -scale 50% ../wall-side.png
+    convert 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 3.png' \
+            -crop 8x348+194+664 -scale 50% ../wall-side-bottom.png
 }
 
 lpc() {
@@ -22,8 +37,14 @@ grass() {
 }
 
 buttons() {
-    convert -size 60x60 xc:transparent -fill white -stroke transparent -draw "roundrectangle 0,0 60,60 10,10" \( stop.svg -resize 40x40 \) -gravity center -composite stop.png
-    convert -size 60x60 xc:transparent -fill white -stroke transparent -draw "roundrectangle 0,0 60,60 10,10" \( ../scratch-blocks/media/green-flag.svg -resize 40x40 \) -gravity center -composite start.png
+    convert -size 60x60 xc:transparent -fill white -stroke transparent \
+            -draw "roundrectangle 0,0 60,60 10,10" \
+            \( stop.svg -resize 40x40 \) \
+            -gravity center -composite stop.png
+    convert -size 60x60 xc:transparent -fill white -stroke transparent \
+            -draw "roundrectangle 0,0 60,60 10,10" \
+            \( ../scratch-blocks/media/green-flag.svg -resize 40x40 \) \
+            -gravity center -composite start.png
 }
 
-lpc
+classroom
