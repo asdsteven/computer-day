@@ -4,10 +4,8 @@ class Interpreter {
         this.opcodes = opcodes
     }
 
-    async stop() {
-        return new Promise(resolve => {
-            this.onStop = resolve;
-        });
+    stop() {
+        this.shouldStop = true;
     }
 
     readId(i) {
@@ -31,44 +29,44 @@ class Interpreter {
 
     async execute() {
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-        const glowBlock = async (i, p) => {
+        const readAndGlow = async (i, p) => {
             const [j, id] = this.readId(i);
-            workspace.glowBlock(id, true);
+            if (workspace.getBlockById(id)) {
+                workspace.glowBlock(id, true);
+            }
             await p;
-            workspace.glowBlock(id, false);
+            if (workspace.getBlockById(id)) {
+                workspace.glowBlock(id, false);
+            }
             await delay(100);
             return j;
         };
         const stack = [];
-        for (let i = 0; i < this.opcodes.length; ) {
-            if (this.onStop) {
-                this.onStop();
-                return false;
-            }
+        for (let i = 0; i < this.opcodes.length && !this.shouldStop; ) {
             const c = this.opcodes[i];
             if (c == '#') {
-                i = await glowBlock(i + 1, delay(300));
+                i = await readAndGlow(i + 1, delay(300));
             } else if (c == '^') {
-                i = await glowBlock(i + 1, this.player.forward());
+                i = await readAndGlow(i + 1, this.player.forward());
             } else if (c == '<') {
-                i = await glowBlock(i + 1, this.player.turn(-1));
+                i = await readAndGlow(i + 1, this.player.turn(-1));
             } else if (c == '>') {
-                i = await glowBlock(i + 1, this.player.turn(1));
+                i = await readAndGlow(i + 1, this.player.turn(1));
             } else if (c == '(') {
-                const [j, n] = this.readInt(i + 1);
-                i = await glowBlock(j, delay(300));
-                stack.push([i, n]);
+                const [begin, n] = this.readInt(i + 1);
+                i = await readAndGlow(begin, delay(300));
+                stack.push([begin, n]);
             } else if (c == ')') {
-                const [j, n] = stack.pop();
+                const [begin, n] = stack.pop();
                 if (n == 1) {
                     // done repeating
+                    await delay(1);
                     i++;
                 } else {
-                    stack.push([j, n - 1]);
-                    i = j;
+                    i = await readAndGlow(begin, delay(300));
+                    stack.push([begin, n - 1]);
                 }
             }
         }
-        return true;
     }
 }

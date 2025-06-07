@@ -11,6 +11,7 @@ class Player {
         let interpreter = null;
         start.on('pointerdown', async () => {
             if (interpreter) {
+                // already running
                 return;
             }
             this.row = 0;
@@ -20,19 +21,20 @@ class Player {
             start.disableInteractive().setAlpha(0.5);
             stop.setInteractive().setAlpha(1);
             interpreter = new Interpreter(this, Blockly.OpCode.greenFlagToCode());
-            const peaceful = await interpreter.execute();
-            if (peaceful && interpreter.onStop) {
-                interpreter.onStop();
+            const f = () => interpreter?.stop();
+            workspace.addChangeListener(f);
+            try {
+                await interpreter.execute();
+            } catch (e) {
+                console.log(e);
             }
+            workspace.removeChangeListener(f);
             interpreter = null;
             start.setInteractive().setAlpha(1);
             stop.disableInteractive().setAlpha(0.5);
         });
         stop.on('pointerdown', () => {
-            if (!interpreter || interpreter.onStop) {
-                return;
-            }
-            interpreter.stop();
+            interpreter?.stop();
         });
     }
 
