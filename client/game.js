@@ -1,9 +1,8 @@
-const TILE_SIZE = 64;  // Size of each grid cell (adjust based on map design)
+const TILE_SIZE = 32;  // Size of each grid cell (adjust based on map design)
 const corridorWidth = TILE_SIZE * 10;
 const corridorHeight = TILE_SIZE * 4;
 const classroomWidth = TILE_SIZE * 12;
 const classroomHeight = TILE_SIZE * 6;
-const drc = [-1, 0, 1, 0, -1];
 
 class ClassroomScene extends Phaser.Scene {
     constructor() {
@@ -21,46 +20,19 @@ class ClassroomScene extends Phaser.Scene {
         loadImage('start');
         loadImage('stop');
         this.load.spritesheet('grass', 'assets/grass.png', {
-            frameWidth: 32,
-            frameHeight: 32
+            frameWidth: 16,
+            frameHeight: 16
         });
         for (const png of lpc) {
             this.load.spritesheet(png, 'assets/' + png, {
-                frameWidth: 128,
-                frameHeight: 128
+                frameWidth: 64,
+                frameHeight: 64
             });
         }
     }
 
-    linkInterpreter(start, stop) {
-        let interpreter = null;
-        start.on('pointerdown', async () => {
-            if (interpreter) {
-                return;
-            }
-            this.player.setData({row: 0, col: 0, dir: 1});
-            this.player.setPosition(corridorWidth, corridorHeight + TILE_SIZE * 0.6)
-            start.disableInteractive().setAlpha(0.5);
-            stop.setInteractive().setAlpha(1);
-            interpreter = new Interpreter(this, Blockly.OpCode.greenFlagToCode());
-            const peaceful = await interpreter.execute();
-            if (peaceful && interpreter.onStop) {
-                interpreter.onStop();
-            }
-            interpreter = null;
-            start.setInteractive().setAlpha(1);
-            stop.disableInteractive().setAlpha(0.5);
-        });
-        stop.on('pointerdown', () => {
-            if (!interpreter || interpreter.onStop) {
-                return;
-            }
-            interpreter.stop();
-        });
-    }
-
     create() {
-        const { add, anims, textures, input } = this;
+        const { add, anims, textures } = this;
         for (const png of lpc) {
             anims.create({
                 key: png + ':0',
@@ -127,13 +99,16 @@ class ClassroomScene extends Phaser.Scene {
         y += wall.height;
         add.tileSprite(x, y, classroomWidth, classroomHeight, 'floor')
            .setOrigin(0).setDepth(-1);
-        this.linkInterpreter(add.image(x - 70, y, 'start').setOrigin(0).setInteractive(),
-                             add.image(x - 70, y + 70, 'stop').setOrigin(0).setAlpha(0.5));
 
         // Draw player
-        this.player = add.sprite(corridorWidth, corridorHeight + TILE_SIZE * 0.6, 'lpc-wav-bro-blu.png', 27)
-                         .setOrigin(0, 1).setDepth(1)
-                         .setData({row: 0, col: 0, dir: 1});
+        this.player = new Player(
+            add.sprite(x, y + TILE_SIZE * 0.6, 'lpc-wav-bro-blu.png', 27)
+               .setOrigin(0, 1).setDepth(1),
+            add.image(x - TILE_SIZE * 1.2, y - TILE_SIZE * 0.5, 'start')
+               .setOrigin(0).setInteractive(),
+            add.image(x - TILE_SIZE * 1.2, y + TILE_SIZE * 0.5, 'stop')
+               .setOrigin(0).setAlpha(0.5)
+        );
 
         // Draw bottom wall
         y += classroomHeight - wall.height;
@@ -154,56 +129,39 @@ class ClassroomScene extends Phaser.Scene {
         add.image(x, y + wall.height - wallSideBottom.height, 'wall-side-bottom')
            .setOrigin(0).setDepth(2);
 
-        this.cursors = input.keyboard.createCursorKeys();
-    }
-
-    update() {
-        if (this.cursors.left.isDown) {
-            this.turnLeft();
-        } else if (this.cursors.right.isDown) {
-            this.turnRight()
-        } else if (this.cursors.up.isDown) {
-            this.forward();
-        }
-    }
-
-    async forward() {
-        return new Promise(resolve => {
-            const p = this.player;
-            p.incData('row', drc[p.data.values.dir]);
-            p.incData('col', drc[p.data.values.dir + 1]);
-            p.play(p.texture.key + ':' + p.data.values.dir);
-            this.tweens.add({
-                targets: p,
-                x: corridorWidth + p.data.values.col * TILE_SIZE,
-                y: corridorHeight + p.data.values.row * TILE_SIZE + TILE_SIZE * 0.6,
-                duration: 384,
-                onComplete: () => {
-                    p.stop();
-                    p.setFrame((4 - p.data.values.dir) % 4 * 9);
-                    resolve();
-                }
-            });
+        // Zoom
+        const c = this.cameras.main;
+        const worldWidth = classroomWidth + 2 * corridorWidth;
+        const worldHeight = classroomHeight + 2 * corridorHeight;
+        const preferredWidth = classroomWidth + 4 * TILE_SIZE;
+        const preferredHeight = classroomHeight + 4 * TILE_SIZE;
+        const zoom = () => {
+            if (c.width / c.height > worldWidth / preferredHeight) {
+                // very wide
+                c.setZoom(c.width / worldWidth);
+            } else if (c.height / c.width > worldHeight / preferredWidth) {
+                // very tall
+                c.setZoom(c.height / worldHeight);
+            } else if (c.width / c.height > preferredWidth / preferredHeight) {
+                // wide
+                c.setZoom(c.height / preferredHeight);
+            } else {
+                // tall
+                c.setZoom(c.width / preferredWidth);
+            }
+        };
+        c.setBounds(0, 0, worldWidth, worldHeight);
+        zoom();
+        c.centerOn(worldWidth / 2, worldHeight / 2);
+        this.scale.on('resize', () => {
+            const centerX = c.midPoint.x;
+            const centerY = c.midPoint.y;
+            zoom();
+            c.centerOn(centerX, centerY);
         });
     }
 
-    async turn(ddir) {
-        return new Promise(resolve => {
-            const p = this.player;
-            const prevDir = p.data.values.dir;
-            p.data.values.dir = (p.data.values.dir + 4 + ddir) % 4;
-            p.play(p.texture.key + ':' + prevDir);
-            this.time.delayedCall(128, () => {
-                p.stop();
-                p.play(p.texture.key + ':' + p.data.values.dir);
-            });
-            this.time.delayedCall(256, () => {
-                p.stop();
-                p.setFrame((4 - p.data.values.dir) % 4 * 9);
-            });
-            this.time.delayedCall(384, resolve);
-        });
-    }
+    update() {}
 }
 
 const game = new Phaser.Game({
@@ -213,7 +171,11 @@ const game = new Phaser.Game({
     height: corridorHeight * 2 + classroomHeight,
     scene: ClassroomScene,
     scale: {
-        mode: Phaser.Scale.ENVELOP,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        min: {
+            width: 1,
+            height: 1
+        }
     }
 });

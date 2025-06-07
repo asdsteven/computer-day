@@ -1,6 +1,6 @@
 class Interpreter {
-    constructor(scene, opcodes) {
-        this.scene = scene;
+    constructor(player, opcodes) {
+        this.player = player;
         this.opcodes = opcodes
     }
 
@@ -49,11 +49,11 @@ class Interpreter {
             if (c == '#') {
                 i = await glowBlock(i + 1, delay(300));
             } else if (c == '^') {
-                i = await glowBlock(i + 1, this.scene.forward());
+                i = await glowBlock(i + 1, this.player.forward());
             } else if (c == '<') {
-                i = await glowBlock(i + 1, this.scene.turn(-1));
+                i = await glowBlock(i + 1, this.player.turn(-1));
             } else if (c == '>') {
-                i = await glowBlock(i + 1, this.scene.turn(1));
+                i = await glowBlock(i + 1, this.player.turn(1));
             } else if (c == '(') {
                 const [j, n] = this.readInt(i + 1);
                 i = await glowBlock(j, delay(300));
