@@ -1,6 +1,6 @@
 const TILE_SIZE = 64;  // Size of each grid cell (adjust based on map design)
 const corridorWidth = TILE_SIZE * 10;
-const corridorHeight = TILE_SIZE * 2;
+const corridorHeight = TILE_SIZE * 4;
 const classroomWidth = TILE_SIZE * 12;
 const classroomHeight = TILE_SIZE * 6;
 const drc = [-1, 0, 1, 0, -1];
@@ -15,10 +15,13 @@ class ClassroomScene extends Phaser.Scene {
         loadImage('corridor');
         loadImage('wall');
         loadImage('floor');
-        loadImage('floor2');
         loadImage('door');
         loadImage('start');
         loadImage('stop');
+        this.load.spritesheet('grass', 'assets/grass.png', {
+            frameWidth: 32,
+            frameHeight: 32
+        });
         for (const png of lpc) {
             this.load.spritesheet(png, 'assets/' + png, {
                 frameWidth: 128,
@@ -27,96 +30,111 @@ class ClassroomScene extends Phaser.Scene {
         }
     }
 
+    linkInterpreter(start, stop) {
+        let interpreter = null;
+        start.on('pointerdown', async () => {
+            if (interpreter) {
+                return;
+            }
+            this.player.setData({row: 0, col: 0, dir: 1});
+            this.player.setPosition(corridorWidth, corridorHeight + TILE_SIZE * 0.6)
+            start.disableInteractive().setAlpha(0.5);
+            stop.setInteractive().setAlpha(1);
+            interpreter = new Interpreter(this, Blockly.OpCode.greenFlagToCode());
+            const peaceful = await interpreter.execute();
+            if (peaceful && interpreter.onStop) {
+                interpreter.onStop();
+            }
+            interpreter = null;
+            start.setInteractive().setAlpha(1);
+            stop.disableInteractive().setAlpha(0.5);
+        });
+        stop.on('pointerdown', () => {
+            if (!interpreter || interpreter.onStop) {
+                return;
+            }
+            interpreter.stop();
+        });
+    }
+
     create() {
+        const { add, anims, textures, input } = this;
         for (const png of lpc) {
-            this.anims.create({
+            anims.create({
                 key: png + ':0',
-                frames: this.anims.generateFrameNumbers(png, { start: 1, end: 8 }),
+                frames: anims.generateFrameNumbers(png, { start: 1, end: 8 }),
                 frameRate: 16,
                 repeat: -1
             });
-            this.anims.create({
+            anims.create({
                 key: png + ':3',
-                frames: this.anims.generateFrameNumbers(png, { start: 10, end: 17 }),
+                frames: anims.generateFrameNumbers(png, { start: 10, end: 17 }),
                 frameRate: 16,
                 repeat: -1
             });
-            this.anims.create({
+            anims.create({
                 key: png + ':2',
-                frames: this.anims.generateFrameNumbers(png, { start: 19, end: 26 }),
+                frames: anims.generateFrameNumbers(png, { start: 19, end: 26 }),
                 frameRate: 16,
                 repeat: -1
             });
-            this.anims.create({
+            anims.create({
                 key: png + ':1',
-                frames: this.anims.generateFrameNumbers(png, { start: 28, end: 35 }),
+                frames: anims.generateFrameNumbers(png, { start: 28, end: 35 }),
                 frameRate: 16,
                 repeat: -1
             });
-            this.anims.create({
+            anims.create({
                 key: png + ':dance',
-                frames: this.anims.generateFrameNumbers(png, { start: 0, end: 35 }),
+                frames: anims.generateFrameNumbers(png, { start: 0, end: 35 }),
                 frameRate: 16,
                 repeat: -1
             });
         }
 
-        const corridor = this.textures.get('corridor').source[0];
-        const wall = this.textures.get('wall').source[0];
-        const door = this.textures.get('door').source[0];
+        const corridor = textures.get('corridor').source[0];
+        const wall = textures.get('wall').source[0];
+        const door = textures.get('door').source[0];
 
         // Draw background
         let x = 0;
         let y = 0;
-        this.add.tileSprite(x, y, classroomWidth + corridorWidth * 2, classroomHeight + corridorHeight * 2, 'floor2').setOrigin(0).setDepth(-1);
+        for (let yy = 0; yy < classroomHeight + corridorHeight * 2; yy += 32) {
+            for (let xx = 0; xx < classroomWidth + corridorWidth * 2; xx += 32) {
+                add.sprite(xx, yy, 'grass', Phaser.Math.RND.pick([0, 0, 0, 0, 0, 0, 9, 9, 9, 18]))
+                   .setOrigin(0).setDepth(-1);
+            }
+        }
 
         // Draw top wall
         x += corridorWidth;
         y += corridorHeight - wall.height;
-        this.add.tileSprite(x, y, classroomWidth, wall.height, 'wall').setOrigin(0).setDepth(-1);
+        add.tileSprite(x, y, classroomWidth, wall.height, 'wall')
+           .setOrigin(0).setDepth(-1);
 
         // Draw classroom floor
         y += wall.height;
-        this.add.tileSprite(x, y, classroomWidth, classroomHeight, 'floor').setOrigin(0).setDepth(-1);
-        this.interpreter = null;
-        this.startButton = this.add.image(x - 70, y, 'start').setInteractive().setOrigin(0);
-        this.stopButton = this.add.image(x - 70, y + 70, 'stop').setAlpha(0.5).setOrigin(0);
-        this.startButton.on('pointerdown', async () => {
-            if (this.interpreter) {
-                return;
-            }
-            this.player.setData({row: 0, col: 0, dir: 1});
-            this.player.setPosition(corridorWidth, corridorHeight + TILE_SIZE * 0.6)
-            this.startButton.disableInteractive().setAlpha(0.5);
-            this.stopButton.setInteractive().setAlpha(1);
-            this.interpreter = new Interpreter(this, Blockly.OpCode.greenFlagToCode());
-            const peaceful = await this.interpreter.execute();
-            if (peaceful && this.interpreter.onStop) {
-                this.interpreter.onStop();
-            }
-            this.interpreter = null;
-            this.startButton.setInteractive().setAlpha(1);
-            this.stopButton.disableInteractive().setAlpha(0.5);
-        });
-        this.stopButton.on('pointerdown', () => {
-            if (!this.interpreter || this.interpreter.onStop) {
-                return;
-            }
-            this.interpreter.stop();
-        });
+        add.tileSprite(x, y, classroomWidth, classroomHeight, 'floor')
+           .setOrigin(0).setDepth(-1);
+        this.linkInterpreter(add.image(x - 70, y, 'start').setOrigin(0).setInteractive(),
+                             add.image(x - 70, y + 70, 'stop').setOrigin(0).setAlpha(0.5));
 
         // Draw player
-        this.player = this.add.sprite(corridorWidth, corridorHeight + TILE_SIZE * 0.6, 'lpc-wav-bro-blu.png', 27).setOrigin(0, 1).setDepth(1);
-        this.player.setData({row: 0, col: 0, dir: 1});
-        this.cursors = this.input.keyboard.createCursorKeys();
+        this.player = add.sprite(corridorWidth, corridorHeight + TILE_SIZE * 0.6, 'lpc-wav-bro-blu.png', 27)
+                         .setOrigin(0, 1).setDepth(1)
+                         .setData({row: 0, col: 0, dir: 1});
 
         // Draw bottom wall
         y += classroomHeight - wall.height;
-        this.add.tileSprite(x, y, classroomWidth - door.width, wall.height, 'wall').setOrigin(0).setDepth(2);
+        add.tileSprite(x, y, classroomWidth - door.width, wall.height, 'wall')
+           .setOrigin(0).setDepth(2);
 
         // Draw bottom door
-        x += classroomWidth - door.width
-        this.add.image(x, y, 'door').setOrigin(0).setDepth(2);
+        x += classroomWidth - door.width;
+        add.image(x, y, 'door')
+           .setOrigin(0).setDepth(2);
+
+        this.cursors = input.keyboard.createCursorKeys();
     }
 
     update() {
@@ -168,7 +186,7 @@ class ClassroomScene extends Phaser.Scene {
     }
 }
 
-const config = {
+const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'phaser',
     width: corridorWidth * 2 + classroomWidth,
@@ -176,8 +194,6 @@ const config = {
     scene: ClassroomScene,
     scale: {
         mode: Phaser.Scale.ENVELOP,
-        autoCenter: Phaser.Scale.CENTER_BOTH  // Centers it properly
+        autoCenter: Phaser.Scale.CENTER_BOTH
     }
-};
-
-const game = new Phaser.Game(config);
+});
