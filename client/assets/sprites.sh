@@ -1,10 +1,18 @@
 # https://opengameart.org/content/grass-tileset-16x16
 # https://styloo.itch.io/2dclassroom
+# Raw assets:
+# quick-track.png
+# grass_tileset_16x16.png
+# stop.svg
+# shoe-prints-solid.svg
+# arrow-rotate-left-solid.svg
+# arrow-rotate-right-solid.svg
+# lpc-*.png
 
 classroom() {
     cd 2dClassroomAssetPackByStyloo
-    convert 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 1.png' \
-            -alpha extract -threshold 10% \
+    convert 'Classroom/Classroom First Spritesheet 1.png' \
+            -alpha extract -threshold 0% \
             -define connected-components:verbose=true -connected-components 8 \
             -auto-level info:
     convert 'WallFloorDoor second version tiling/strokespritesheet20121.png' \
@@ -31,6 +39,8 @@ classroom() {
             -crop 8x144+194+665 -scale 25% ../wall-side.png
     convert 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 3.png' \
             -crop 8x348+194+664 -scale 25% ../wall-side-bottom.png
+    convert 'Classroom/Classroom First Spritesheet 1.png' \
+            -crop 135x125+44+666 -scale 20% ../desk.png
     cd ..
 }
 
