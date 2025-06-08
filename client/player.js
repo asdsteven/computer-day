@@ -1,41 +1,20 @@
 const drc = [-1, 0, 1, 0, -1];
 
 class Player {
-    constructor(sprite, start, stop) {
+    constructor(sprite) {
         this.sprite = sprite;
+        this.initX = sprite.x;
+        this.initY = sprite.y;
         this.row = 0;
         this.col = 0;
         this.dir = 1;
-        this.initX = sprite.x;
-        this.initY = sprite.y;
-        let interpreter = null;
-        start.on('pointerdown', async () => {
-            if (interpreter) {
-                // already running
-                return;
-            }
-            this.row = 0;
-            this.col = 0;
-            this.dir = 1;
-            this.sprite.setPosition(this.initX, this.initY);
-            start.disableInteractive().setAlpha(0.5);
-            stop.setInteractive().setAlpha(1);
-            interpreter = new Interpreter(this, Blockly.OpCode.greenFlagToCode());
-            const f = () => interpreter?.stop();
-            workspace.addChangeListener(f);
-            try {
-                await interpreter.execute();
-            } catch (e) {
-                console.log(e);
-            }
-            workspace.removeChangeListener(f);
-            interpreter = null;
-            start.setInteractive().setAlpha(1);
-            stop.disableInteractive().setAlpha(0.5);
-        });
-        stop.on('pointerdown', () => {
-            interpreter?.stop();
-        });
+    }
+
+    reset() {
+        this.sprite.setPosition(this.initX, this.initY);
+        this.row = 0;
+        this.col = 0;
+        this.dir = 1;
     }
 
     async forward() {
@@ -45,8 +24,8 @@ class Player {
             this.sprite.play(this.sprite.texture.key + ':' + this.dir);
             this.sprite.scene.tweens.add({
                 targets: this.sprite,
-                x: this.initX + this.col * TILE_SIZE,
-                y: this.initY + this.row * TILE_SIZE,
+                x: this.initX + this.col * tileWidth,
+                y: this.initY + this.row * tileHeight,
                 duration: 384,
                 onComplete: () => {
                     this.sprite.stop();

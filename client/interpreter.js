@@ -1,11 +1,41 @@
 class Interpreter {
-    constructor(player, opcodes) {
+    constructor(player, start, stop) {
         this.player = player;
-        this.opcodes = opcodes
+        this.running = false;
+        this.shouldStop = false;
+        this.start = start;
+        this.stop = stop;
+        start.on('pointerdown', async () => {
+            if (this.running) {
+                return;
+            }
+            this.running = true
+            this.shouldStop = false;
+            this.opcodes = Blockly.OpCode.greenFlagToCode();
+            this.player.reset();
+            start.disableInteractive().setAlpha(0.5);
+            stop.setInteractive().setAlpha(1);
+            const f = () => { this.shouldStop = true; };
+            workspace.addChangeListener(f);
+            try {
+                await this.execute();
+            } catch (e) {
+                console.log(e);
+            }
+            this.running = false;
+            workspace.removeChangeListener(f);
+            start.setInteractive().setAlpha(1);
+            stop.disableInteractive().setAlpha(0.5);
+        });
+        stop.on('pointerdown', () => {
+            this.shouldStop = true;
+        });
     }
 
-    stop() {
-        this.shouldStop = true;
+    destroy() {
+        this.player.sprite.destroy();
+        this.start.destroy();
+        this.stop.destroy();
     }
 
     readId(i) {
