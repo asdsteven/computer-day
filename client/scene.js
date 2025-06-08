@@ -36,6 +36,41 @@ class ComputerDayScene extends Phaser.Scene {
         });
     }
 
+    addTeacherUI() {
+        const uiCamera = this.cameras.add(0, 0, 50, 20);
+        uiCamera.setBackgroundColor(0xffffff);
+        const { add } = this;
+        const container = add.container(0, 0);
+        let expanded = false;
+        const font = {
+            fontSize: '16px',
+            color: '#000'
+        };
+        let y = 40;
+        container.add(add.text(0, 0, 'menu', font).setOrigin(0).setInteractive().on("pointerdown", () => {
+            if (expanded) {
+                expanded = false;
+                uiCamera.setViewport(0, 0, 50, 20);
+            } else {
+                expanded = true;
+                uiCamera.setViewport(0, 0, 200, y);
+            }
+        }));
+        container.add(add.text(0, y, 'start', font).setOrigin(0).setInteractive().on("pointerdown", () => {
+        }));
+        y += 30;
+        container.add(add.text(0, y, 'skip mini game', font).setOrigin(0).setInteractive().on("pointerdown", () => {
+        }));
+        y += 30;
+        container.add(add.text(0, y, 'show answer', font).setOrigin(0).setInteractive().on("pointerdown", () => {
+        }));
+        y += 30;
+        container.add(add.text(0, y, 'skip this level', font).setOrigin(0).setInteractive().on("pointerdown", () => {
+        }));
+        y += 30;
+        this.cameras.main.ignore(container);
+    }
+
     async chooseAvatar() {
         this.viewWidth = tileWidth * 17;
         this.viewHeight = tileHeight * 13;
@@ -299,7 +334,11 @@ class ComputerDayScene extends Phaser.Scene {
             c.centerOn(centerX, centerY);
         });
 
-        this.gameflow();
+        if (window.location.href.endsWith("/teacher")) {
+            this.addTeacherUI();
+        } else {
+            this.gameflow();
+        }
     }
 
     update() {}
