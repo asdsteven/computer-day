@@ -50,3 +50,7 @@ const lpc = [
     'lpc-rel-red-blu.png',
     'lpc-rel-whi-gre.png'
 ];
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { lpc };
+}

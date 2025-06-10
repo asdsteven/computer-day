@@ -6,7 +6,6 @@
         <title>Computer Day</title>
         <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
         <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
-        <script src="scratch-blocks/dist/web/horizontal.js"></script>
         <script src="interpreter.js"></script>
         <script src="lpc.js"></script>
         <script src="player.js"></script>
@@ -26,11 +25,7 @@
         </xml>
     </head>
     <body style="margin:0;overflow:hidden">
-        <div style="display:flex;flex-direction:column;width:100vw;height:100vh">
-            <div id="phaser" style="height:calc(100vh - 200px);line-height:0;font-size:0"></div>
-            <div id="scratch-blocks" style="height:200px"></div>
-        </div>
-        <script src="scratch-blocks.js"></script>
+        <div id="phaser" style="width:100vw;height:100vh;line-height:0;font-size:0"></div>
         <script src="scene.js"></script>
     </body>
 </html>

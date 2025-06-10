@@ -1,45 +1,61 @@
 class Interpreter {
-    constructor(player, start, stop) {
-        this.player = player;
-        this.running = false;
-        this.shouldStop = false;
-        this.start = start;
-        this.stop = stop;
-        this.onSolved = [];
-        start.on('pointerdown', async () => {
-            if (this.running || this.player.solved()) {
+    constructor(controller, name, avatar) {
+        this.controller = controller
+        this.scene = controller.scene;
+        this.state = 'idle';
+        const { add } = this.scene;
+        this.player = new Player(controller, { name: name, avatar: avatar }, true);
+        this.start = add.image(0, 0, 'start').setOrigin(1, 0).setDepth(9999)
+                        .setInteractive()
+        this.start.on('pointerdown', async () => {
+            if (this.state != 'idle' || this.player.solved()) {
                 return;
             }
-            this.running = true
-            this.shouldStop = false;
+            this.state = 'running';
             this.opcodes = Blockly.OpCode.greenFlagToCode();
             this.player.reset();
-            start.disableInteractive().setAlpha(0.5);
-            stop.setInteractive().setAlpha(1);
-            const f = () => { this.shouldStop = true; };
+            this.start.disableInteractive().setAlpha(0.5);
+            this.stop.setInteractive().setAlpha(1);
+            const f = () => { this.state = 'stopping' };
             workspace.addChangeListener(f);
             try {
                 await this.execute();
             } catch (e) {
                 console.log(e);
             }
-            this.running = false;
+            this.state = 'idle';
             workspace.removeChangeListener(f);
-            start.setInteractive().setAlpha(1);
-            stop.disableInteractive().setAlpha(0.5);
+            this.start.setInteractive().setAlpha(1);
+            this.stop.disableInteractive().setAlpha(0.5);
             if (this.player.solved()) {
-                this.onSolved.forEach(f => f());
+                controller.interrupts.solved?.();
             }
         });
-        stop.on('pointerdown', () => {
-            this.shouldStop = true;
+        this.stop = add.image(0, 60, 'stop').setOrigin(1, 0).setDepth(9999)
+                       .setAlpha(0.5)
+        this.stop.on('pointerdown', () => {
+            if (this.state != 'running') {
+                return;
+            }
+            this.state = 'stopping';
         });
     }
 
     destroy() {
-        this.player.sprite.destroy();
+        this.player.destroy();
         this.start.destroy();
         this.stop.destroy();
+    }
+
+    initLevel(level) {
+        const { info } = levels[level];
+        this.start.x = (worldWidth - info.roomWidth) / 2 - 10;
+        this.start.y = (worldHeight - info.roomHeight) / 2;
+        this.start.setVisible(true);
+        this.stop.x = (worldWidth - info.roomWidth) / 2 - 10;
+        this.stop.y = (worldHeight - info.roomHeight) / 2 + 60;
+        this.stop.setVisible(true);
+        this.player.initLevel(level);
     }
 
     readId(i) {
@@ -61,14 +77,8 @@ class Interpreter {
         return [i, n];
     }
 
-    async solved() {
-        await new Promise(resolve => {
-            this.onSolved.push(resolve);
-        });
-    }
-
     async execute() {
-        const delay = ms => this.player.sprite.scene.delay(ms);
+        const delay = ms => this.controller.delay(ms);
         const readAndGlow = async (i, p) => {
             const [j, id] = this.readId(i);
             if (workspace.getBlockById(id)) {
@@ -82,7 +92,7 @@ class Interpreter {
             return j;
         };
         const stack = [];
-        for (let i = 0; i < this.opcodes.length && !this.shouldStop && !this.player.solved(); ) {
+        for (let i = 0; i < this.opcodes.length && this.state != 'stopping' && !this.player.solved(); ) {
             const c = this.opcodes[i];
             if (c == '#') {
                 i = await readAndGlow(i + 1, delay(250));

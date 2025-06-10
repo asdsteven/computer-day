@@ -1,34 +1,63 @@
 const drc = [-1, 0, 1, 0, -1];
 
 class Player {
-    constructor(sprite, tiles, tileInfo) {
-        this.sprite = sprite;
+    constructor(controller, { name, avatar, row, col, dir, x, y }, isSelf) {
+        this.controller = controller;
+        this.scene = controller.scene;
+        this.name = name;
+        this.avatar = avatar;
+        this.row = row;
+        this.col = col;
+        this.dir = dir;
+        this.x = x;
+        this.y = y;
+
+        const { add } = this.scene;
+        this.sprite = add.sprite(0, 0, lpc[avatar], 0)
+                         .setOrigin(0.5, 0.9).setScale(2);
+        this.container = add.container(0, 0, [
+            this.sprite,
+            add.text(0, 10, name, {
+                fontSize: '16px',
+                stroke: isSelf ? '#00f' : '#000',
+                strokeThickness: 2
+            }).setOrigin(0.5, 0)
+        ]);
+    }
+
+    destroy() {
+        this.container.destroy();
+    }
+
+    initLevel(level) {
+        this.level = level;
+        const { tiles, info } = levels[level];
         this.tiles = tiles;
-        this.tileInfo = tileInfo;
-        const { worldWidth, worldHeight, roomWidth, roomHeight } = tileInfo;
-        this.left = (worldWidth - roomWidth) / 2 + 0.5 * tileWidth;
-        this.top = (worldHeight - roomHeight) / 2 + 0.5 * tileHeight;
+        this.info = info;
+        this.SX = (worldWidth - info.roomWidth) / 2 + tileWidth / 2;
+        this.SY = (worldHeight - info.roomHeight) / 2 + tileHeight / 2;
         this.reset();
     }
 
     reset() {
-        this.row = this.tileInfo.SR;
-        this.col = this.tileInfo.SC;
-        this.dir = this.tileInfo.dir;
-        this.sprite.setPosition(this.left + this.col * tileWidth,
-                                this.top + this.row * tileHeight);
+        this.row = this.info.SR;
+        this.col = this.info.SC;
+        this.dir = this.info.dir;
+        this.container.x = this.SX + this.col * tileWidth;
+        this.container.y = this.SY + this.row * tileHeight;
+        this.container.setDepth(this.container.y);
         this.sprite.setFrame((4 - this.dir) % 4 * 9);
     }
 
     solved() {
-        return this.row >= this.tileInfo.rows;
+        return this.row >= this.info.rows;
     }
 
     bounce(r, c) {
-        if (r < 0 || c < 0 || c >= this.tileInfo.cols) {
+        if (r < 0 || c < 0 || c >= this.info.cols) {
             return true;
         }
-        if (r >= this.tileInfo.rows) {
+        if (r >= this.info.rows) {
             return this.tiles[this.row][this.col] != 'X';
         }
         if (this.tiles[r][c] == 'O') {
@@ -37,7 +66,27 @@ class Player {
         return false;
     }
 
-    async forward() {
+    listener(event) {
+        return (res, err) => {
+            if (err) {
+                console.log(`emit ${event} err:`, err);
+                return;
+            }
+            if (res.ok) {
+                return;
+            }
+            if (res.msg != 'level differ') {
+                console.log(`emit ${event} err:`, res.msg);
+                return;
+            }
+            this.controller.interrupts?.level();
+        };
+    }
+
+    async forward(remote) {
+        if (!remote) {
+            this.controller.socket?.emit('forward', this.level, this.row, this.col, this.dir, this.listener('forward'));
+        }
         const r = this.row + drc[this.dir];
         const c = this.col + drc[this.dir + 1];
         if (this.bounce(r, c)) {
@@ -45,41 +94,41 @@ class Player {
             const cc = this.col + 0.25 * drc[this.dir + 1];
             this.sprite.play(this.sprite.texture.key + ':' + this.dir);
             await new Promise(resolve => {
-                this.sprite.scene.tweens.add({
-                    targets: this.sprite,
-                    x: this.left + cc * tileWidth,
-                    y: this.top + rr * tileHeight,
-                    duration: 125,
-                    onComplete: () => {
-                        this.sprite.anims.reverse();
-                        resolve();
-                    }
+                this.scene.tweens.chain({
+                    targets: this.container,
+                    tweens: [{
+                        x: this.SX + cc * tileWidth,
+                        y: this.SY + rr * tileHeight,
+                        depth: this.SY + rr * tileHeight,
+                        duration: 125,
+                        onComplete: () => {
+                            this.sprite.anims.reverse();
+                        }
+                    }, {
+                        x: this.SX + this.col * tileWidth,
+                        y: this.SY + this.row * tileHeight,
+                        depth: this.SY + this.row * tileHeight,
+                        duration: 125,
+                        onComplete: () => {
+                            this.sprite.anims.stop();
+                            this.sprite.setFrame((4 - this.dir) % 4 * 9);
+                            resolve();
+                        }
+                    }]
                 });
             });
-            await new Promise(resolve => {
-                this.sprite.scene.tweens.add({
-                    targets: this.sprite,
-                    x: this.left + this.col * tileWidth,
-                    y: this.top + this.row * tileHeight,
-                    duration: 125,
-                    onComplete: () => {
-                        this.sprite.stop();
-                        this.sprite.setFrame((4 - this.dir) % 4 * 9);
-                        resolve();
-                    }
-                });
-            });
-            await this.sprite.scene.delay(250);
+            await this.controller.delay(250);
             return;
         }
         this.row = r;
         this.col = c;
         this.sprite.play(this.sprite.texture.key + ':' + this.dir);
         await new Promise(resolve => {
-            this.sprite.scene.tweens.add({
-                targets: this.sprite,
-                x: this.left + this.col * tileWidth,
-                y: this.top + this.row * tileHeight,
+            this.scene.tweens.add({
+                targets: this.container,
+                x: this.SX + this.col * tileWidth,
+                y: this.SY + this.row * tileHeight,
+                depth: this.SY + this.row * tileHeight,
                 duration: 500,
                 onComplete: () => {
                     this.sprite.stop();
@@ -90,16 +139,19 @@ class Player {
         });
     }
 
-    async turn(ddir) {
+    async turn(ddir, remote) {
+        if (!remote) {
+            this.controller.socket?.emit('turn', this.level, this.row, this.col, this.dir, ddir, this.listener('turn'));
+        }
         const prevDir = this.dir;
         this.dir = (this.dir + 4 + ddir) % 4;
         this.sprite.play(this.sprite.texture.key + ':' + prevDir);
-        await this.sprite.scene.delay(125);
+        await this.controller.delay(125);
         this.sprite.play(this.sprite.texture.key + ':' + this.dir);
         this.sprite.anims.setProgress(0.75);
-        await this.sprite.scene.delay(125);
+        await this.controller.delay(125);
         this.sprite.stop();
         this.sprite.setFrame((4 - this.dir) % 4 * 9);
-        await this.sprite.scene.delay(125);
+        await this.controller.delay(125);
     }
 }

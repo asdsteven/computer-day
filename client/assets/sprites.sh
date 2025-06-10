@@ -16,7 +16,7 @@ classroom() {
             -define connected-components:verbose=true -connected-components 8 \
             -auto-level info:
     convert 'WallFloorDoor second version tiling/strokespritesheet20121.png' \
-            -crop 248x144+454+55 -scale 25% ../floor.png
+            -crop 248x144+454+55 -scale 50% ../floor.png
     # convert 'WallFloorDoor second version tiling/strokespritesheet20121.png' \
     #         -crop 248x145+62+55  floor2.png
     # convert 'WallFloorDoor second version tiling/strokespritesheet20121.png' \
@@ -24,23 +24,23 @@ classroom() {
     # convert 'WallFloorDoor second version tiling/strokespritesheet20129.png' \
     #         -crop 248x200+72+91  -scale 50% ../wall.png
     convert 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 1.png' \
-            -crop 124x208+136+352 -scale 25% ../door.png
+            -crop 124x208+136+352 -scale 50% ../door.png
     convert \( 'WallFloorDoorWstroke/WallFloorDoorW second spritesheet 1.png' \
-            -crop 248x208+72+84 -scale 25% \) \
+            -crop 248x208+72+84 -scale 50% \) \
             \( 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 1.png' \
-            -crop 124x208+74+734 -scale 25% \) \
+            -crop 124x208+74+734 -scale 50% \) \
             +append ../wall0.png
     convert \( 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 1.png' \
-            -crop 124x208+74+734 -scale 25% \) \
+            -crop 124x208+74+734 -scale 50% \) \
             \( 'WallFloorDoorWstroke/WallFloorDoorW second spritesheet 1.png' \
-            -crop 248x208+72+84 -scale 25% \) \
+            -crop 248x208+72+84 -scale 50% \) \
             +append ../wall1.png
     convert 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 3.png' \
-            -crop 8x144+194+665 -scale 25% ../wall-side.png
+            -crop 8x144+194+665 -scale 50% ../wall-side.png
     convert 'WallFloorDoorWstroke/Wallfloordoorw First Spritesheet 3.png' \
-            -crop 8x348+194+664 -scale 25% ../wall-side-bottom.png
+            -crop 8x348+194+664 -scale 50% ../wall-side-bottom.png
     convert 'Classroom/Classroom First Spritesheet 1.png' \
-            -crop 135x125+44+666 -scale 20% ../desk.png
+            -crop 135x125+44+666 -scale 40% ../desk.png
     cd ..
 }
 
@@ -56,29 +56,29 @@ grass() {
 }
 
 buttons() {
-    convert -size 30x30 xc:transparent -fill white -stroke transparent \
-            -draw "roundrectangle 0,0 29,29 5,5" \
-            \( stop.svg -resize 20x20 \) \
+    convert -size 60x60 xc:transparent -fill white -stroke transparent \
+            -draw "roundrectangle 0,0 59,59 5,5" \
+            \( stop.svg -resize 40x40 \) \
             -gravity center -composite stop.png
-    convert -size 30x30 xc:transparent -fill white -stroke transparent \
-            -draw "roundrectangle 0,0 29,29 5,5" \
-            \( ../scratch-blocks/media/green-flag.svg -resize 20x20 \) \
+    convert -size 60x60 xc:transparent -fill white -stroke transparent \
+            -draw "roundrectangle 0,0 59,59 5,5" \
+            \( ../scratch-blocks/media/green-flag.svg -resize 40x40 \) \
             -gravity center -composite start.png
 }
 
 colortiles() {
-    convert -size 29x29 xc:none \
+    convert -size 58x58 xc:none \
         -fill "#DC464680" -stroke "#A53232D0" -strokewidth 2 \
-        -draw "roundrectangle 0,0 28,28 5,5" colortileR.png
-    convert -size 29x29 xc:none \
+        -draw "roundrectangle 0,0 57,57 5,5" colortileR.png
+    convert -size 58x58 xc:none \
         -fill "#3CB45080" -stroke "#246B32D0" -strokewidth 2 \
-        -draw "roundrectangle 0,0 28,28 5,5" colortileG.png
-    convert -size 29x29 xc:none \
+        -draw "roundrectangle 0,0 57,57 5,5" colortileG.png
+    convert -size 58x58 xc:none \
         -fill "#508CE680" -stroke "#2C5BB7D0" -strokewidth 2 \
-        -draw "roundrectangle 0,0 28,28 5,5" colortileB.png
-    convert -size 29x29 xc:none \
+        -draw "roundrectangle 0,0 57,57 5,5" colortileB.png
+    convert -size 58x58 xc:none \
         -fill "#F0DC6480" -stroke "#BFA235D0" -strokewidth 2 \
-        -draw "roundrectangle 0,0 28,28 5,5" colortileY.png
+        -draw "roundrectangle 0,0 57,57 5,5" colortileY.png
 }
 
 classroom
