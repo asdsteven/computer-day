@@ -30,6 +30,7 @@ class Interpreter {
             if (this.player.solved()) {
                 controller.interrupts.solved?.();
             }
+            this.idleWake?.();
         });
         this.stop = add.image(0, 60, 'stop').setOrigin(1, 0).setDepth(9999)
                        .setAlpha(0.5)
@@ -41,7 +42,15 @@ class Interpreter {
         });
     }
 
-    destroy() {
+    async destroy() {
+        if (this.state == 'running') {
+            this.state = 'stopping';
+        }
+        if (this.state == 'stopping') {
+            await new Promise(resolve => {
+                this.idleWake = resolve;
+            });
+        }
         this.player.destroy();
         this.start.destroy();
         this.stop.destroy();

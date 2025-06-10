@@ -242,7 +242,7 @@ class Controller {
             this.level++;
         }
         cleanUp();
-        this.interpreter.destroy();
+        await this.interpreter.destroy();
     }
 
     drawButton(event) {
@@ -328,7 +328,7 @@ class Controller {
                 this.level++;
             }
             cleanUp();
-            this.interpreter.destroy();
+            await this.interpreter.destroy();
             return;
         }
         const avatar = await this.chooseAvatar();
@@ -357,7 +357,7 @@ class Controller {
             }
         }
         cleanUp();
-        this.interpreter.destroy();
+        await this.interpreter.destroy();
         Object.values(this.players).forEach(p => p.destroy());
         this.socket.disconnect();
         this.socket = null;
