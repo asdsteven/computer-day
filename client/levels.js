@@ -6,72 +6,157 @@ const worldHeight = tileHeight * 27;
 const levels = [
     {
         difficulty: 0,
-        tiles: [ '  R OG'
-               , 'EO Y B'
+        hint: 'Can she get out of the classroom?',
+        answer: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="forward"><next><block type="forward"><next><block type="forward"></block></next></block></next></block></next></block></xml>',
+        tiles: [ 'S     '
                , '      '
-               , 'X  XXX'
+               , 'X     '
         ]
     },
     {
         difficulty: 0,
-        tiles: [ '  R OG'
-               , 'EO Y B'
+        hint: 'Make a turn',
+        answer: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="turn_right"><next><block type="forward"><next><block type="forward"><next><block type="forward"></block></next></block></next></block></next></block></next></block></xml>',
+        tiles: [ 'E     '
                , '      '
-               , 'X  XXX'
+               , 'X     '
+        ]
+    },
+    {
+        difficulty: 0,
+        hint: 'Make a big turn',
+        answer: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="forward"><next><block type="forward"><next><block type="turn_right"><next><block type="forward"><next><block type="forward"><next><block type="forward"></block></next></block></next></block></next></block></next></block></next></block></next></block></xml>',
+        tiles: [ 'E     '
+               , '      '
+               , '  X   '
+        ]
+    },
+    {
+        difficulty: 0,
+        hint: 'Either exits are fine',
+        answer: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="turn_right"><next><block type="forward"><next><block type="forward"><next><block type="forward"></block></next></block></next></block></next></block></next></block></xml>',
+        tiles: [ 'E     '
+               , '      '
+               , 'X X   '
+        ]
+    },
+    {
+        difficulty: 0,
+        hint: 'Turn behind',
+        answer: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="turn_right"><next><block type="turn_right"><next><block type="forward"><next><block type="forward"><next><block type="forward"><next><block type="turn_left"><next><block type="forward"><next><block type="forward"><next><block type="forward"></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></xml>',
+        tiles: [ '   E  '
+               , '      '
+               , 'X     '
+        ]
+    },
+    {
+        difficulty: 0,
+        hint: 'Desks would block the way',
+        answer: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="turn_left"><next><block type="forward"><next><block type="turn_right"><next><block type="control_repeat"><statement name="SUBSTACK"><block type="forward"></block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">3</field></shadow></value><next><block type="turn_right"><next><block type="forward"><next><block type="turn_left"><next><block type="forward"></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></xml>',
+        tiles: [ 'S     '
+               , 'O     '
+               , '      '
+               , 'X     '
+        ]
+    },
+    {
+        difficulty: 0,
+        hint: 'Only one forward / turn block is allowed',
+        blocks: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="forward" deletable="false"><next><block type="turn_left" deletable="false"><next><block type="turn_right" deletable="false"></block></next></block></next></block></next></block></xml>',
+        tiles: [ 'S   '
+               , '    '
+               , '    '
+               , 'X   '
+        ]
+    },
+    {
+        difficulty: 0,
+        hint: 'You have completed the introduction!',
+        tiles: [ 'S'
+               , ' '
+               , 'X'
+        ],
+    },
+    {
+        difficulty: 0,
+        hint: 'You have completed the introduction!',
+        tiles: [ 'S'
+               , ' '
+               , 'X'
         ],
         done: true
     },
     {
         difficulty: 1,
-        tiles: [ '  R OG'
-               , 'EO Y B'
-               , '      '
-               , 'X  XXX'
+        hint: 'Only one forward / turn block is allowed',
+        blocks: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="forward" deletable="false"><next><block type="turn_left" deletable="false"><next><block type="turn_right" deletable="false"></block></next></block></next></block></next></block></xml>',
+        tiles: [ 'E   '
+               , '    '
+               , '    '
+               , '   X'
         ]
     },
     {
         difficulty: 1,
-        tiles: [ '  R OG'
-               , 'EO Y B'
-               , '      '
-               , 'X  XXX'
+        hint: 'Only one forward / turn block is allowed',
+        blocks: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="forward" deletable="false"><next><block type="turn_left" deletable="false"><next><block type="turn_right" deletable="false"></block></next></block></next></block></next></block></xml>',
+        tiles: [ 'E      '
+               , '       '
+               , '       '
+               , '      X'
+        ]
+    },
+    {
+        difficulty: 1,
+        hint: 'You have completed the level!',
+        tiles: [ 'S'
+               , ' '
+               , 'X'
+        ],
+    },
+    {
+        difficulty: 1,
+        hint: 'You have completed the level!',
+        tiles: [ 'S'
+               , ' '
+               , 'X'
         ],
         done: true
     },
     {
         difficulty: 2,
-        tiles: [ '  R OG'
-               , 'EO Y B'
-               , '      '
-               , 'X  XXX'
-        ]
+        hint: 'You have completed the level!',
+        tiles: [ 'S'
+               , ' '
+               , 'X'
+        ],
     },
     {
         difficulty: 2,
-        tiles: [ '  R OG'
-               , 'EO Y B'
-               , '      '
-               , 'X  XXX'
+        hint: 'You have completed the level!',
+        tiles: [ 'S'
+               , ' '
+               , 'X'
         ],
         done: true
     },
     {
         difficulty: 3,
-        tiles: [ '  R OG'
-               , 'EO Y B'
-               , '      '
-               , 'X  XXX'
-        ]
+        hint: 'You have completed the level!',
+        tiles: [ 'S'
+               , ' '
+               , 'X'
+        ],
     },
     {
         difficulty: 3,
-        tiles: [ '  R OG'
-               , 'EO Y B'
-               , '      '
-               , 'X  XXX'
+        hint: 'You have completed the level!',
+        tiles: [ 'S'
+               , ' '
+               , 'X'
         ],
         done: true
-    }
+    },
 ];
 const levelBegins = [null, null, null, null];
 

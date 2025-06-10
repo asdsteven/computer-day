@@ -134,7 +134,9 @@ class Controller {
         while (true) {
             Object.values(this.players).forEach(p => p.initLevel(this.level));
             const cleanUp = this.drawDifficulty();
+            const cleanUp2 = this.drawHint();
             const res = await this.drawLevel('level', 'quit');
+            cleanUp2();
             cleanUp();
             if (res == 'quit') {
                 break;
@@ -208,11 +210,12 @@ class Controller {
         this.level = levelBegins[0];
         this.interpreter = new Interpreter(this, 'You', 0);
         const cleanUp = this.drawButton('skip');
-        alert('Can she get out of the classroom?');
         while (true) {
             this.interpreter.initLevel(this.level);
             const cleanUp = this.drawDifficulty();
+            const cleanUp2 = this.drawHint();
             const res = await this.drawLevel('solved', 'skip', 'done');
+            cleanUp2();
             cleanUp();
             if (res == 'skip') {
                 break;
@@ -224,7 +227,6 @@ class Controller {
         }
         cleanUp();
         this.interpreter.destroy();
-        alert('Get ready for more challenges!');
     }
 
     drawButton(event) {
@@ -247,7 +249,7 @@ class Controller {
     }
 
     drawDifficulty() {
-        const uiCamera = this.scene.cameras.add(10, 10, 360, 30);
+        const { roomHeight } = levels[this.level].info;
         const { add } = this.scene;
         const difficulty = [
             'Introductory',
@@ -256,16 +258,34 @@ class Controller {
             'Difficult'
         ][levels[this.level].difficulty];
         const level = this.level - levelBegins[levels[this.level].difficulty] + 1;
-        const text = add.text(100, 10, `Difficulty: ${difficulty}  Level: ${level}`, {
+        const text = add.text(worldWidth / 2, (worldHeight - roomHeight) / 2 - tileHeight * 2, `Difficulty: ${difficulty}  Level: ${this.level}`, {
             fontSize: '12px',
-            color: '#000'
-        }).setOrigin(0).setInteractive().on('pointerdown', () => {
+            color: '#000',
+            stroke: '#fff',
+            strokeThickness: 2
+        }).setOrigin(0.5, 0).setInteractive().on('pointerdown', () => {
             this.interrupts[event]?.();
         });
-        this.scene.cameras.main.ignore(text);
         return () => {
             text.destroy();
-            this.scene.cameras.remove(uiCamera);
+        };
+    }
+
+    drawHint() {
+        const hint = levels[this.level].hint;
+        if (!hint) {
+            return () => {};
+        }
+        const { roomHeight } = levels[this.level].info;
+        const { add } = this.scene;
+        const text = add.text(worldWidth / 2, (worldHeight - roomHeight) / 2 - tileHeight, hint, {
+            fontSize: '20px',
+            color: '#000',
+            stroke: '#fff',
+            strokeThickness: 4
+        }).setOrigin(0.5, 0).setDepth(9999);
+        return () => {
+            text.destroy();
         };
     }
 
@@ -279,7 +299,9 @@ class Controller {
             while (true) {
                 this.interpreter.initLevel(this.level);
                 const cleanUp = this.drawDifficulty();
+                const cleanUp2 = this.drawHint();
                 const res = await this.drawLevel('solved', 'quit', 'done');
+                cleanUp2();
                 cleanUp();
                 if (res == 'quit') {
                     break;
@@ -311,7 +333,9 @@ class Controller {
             this.interpreter.initLevel(this.level);
             Object.values(this.players).forEach(p => p.initLevel(this.level));
             const cleanUp = this.drawDifficulty();
+            const cleanUp2 = this.drawHint();
             const res = await this.drawLevel('level', 'quit');
+            cleanUp2();
             cleanUp();
             if (res == 'quit') {
                 break;
@@ -362,7 +386,7 @@ class Controller {
         // Draw top wall
         let x = (worldWidth - roomWidth) / 2;
         let y = (worldHeight - roomHeight) / 2 - wall.height;
-        bg.push(add.tileSprite(x, y, roomWidth, wall.height, 'wall0')
+        bg.push(add.tileSprite(x, y, roomWidth, wall.height, 'wall' + info.cols % 3 % 2)
                    .setOrigin(0).setDepth(y + wall.height));
 
         // Draw side walls

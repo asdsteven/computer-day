@@ -16,7 +16,7 @@ class Interpreter {
             this.player.reset();
             this.start.disableInteractive().setAlpha(0.5);
             this.stop.setInteractive().setAlpha(1);
-            const f = () => { this.state = 'stopping' };
+            const f = () => { this.state = 'stopping'; };
             workspace.addChangeListener(f);
             try {
                 await this.execute();
@@ -48,7 +48,7 @@ class Interpreter {
     }
 
     initLevel(level) {
-        const { info } = levels[level];
+        const { info, blocks } = levels[level];
         this.start.x = (worldWidth - info.roomWidth) / 2 - 10;
         this.start.y = (worldHeight - info.roomHeight) / 2;
         this.start.setVisible(true);
@@ -56,6 +56,14 @@ class Interpreter {
         this.stop.y = (worldHeight - info.roomHeight) / 2 + 60;
         this.stop.setVisible(true);
         this.player.initLevel(level);
+        workspace.clear();
+        if (blocks) {
+            Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(blocks), workspace);
+            workspace.updateToolbox('<xml><block type="control_repeat"><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">4</field></shadow></value></block></xml>');
+        } else {
+            Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom('<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"></block></xml>'), workspace);
+            workspace.updateToolbox('<xml><block type="forward"></block><block type="turn_left"></block><block type="turn_right"></block><block type="control_repeat"><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">4</field></shadow></value></block></xml>');
+        }
     }
 
     readId(i) {
