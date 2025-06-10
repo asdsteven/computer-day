@@ -133,7 +133,9 @@ class Controller {
         const cleanUp = this.drawTeacherUi();
         while (true) {
             Object.values(this.players).forEach(p => p.initLevel(this.level));
+            const cleanUp = this.drawDifficulty();
             const res = await this.drawLevel('level', 'quit');
+            cleanUp();
             if (res == 'quit') {
                 break;
             }
@@ -209,7 +211,9 @@ class Controller {
         alert('Can she get out of the classroom?');
         while (true) {
             this.interpreter.initLevel(this.level);
+            const cleanUp = this.drawDifficulty();
             const res = await this.drawLevel('solved', 'skip', 'done');
+            cleanUp();
             if (res == 'skip') {
                 break;
             }
@@ -242,6 +246,29 @@ class Controller {
         };
     }
 
+    drawDifficulty() {
+        const uiCamera = this.scene.cameras.add(10, 10, 360, 30);
+        const { add } = this.scene;
+        const difficulty = [
+            'Introductory',
+            'Easy',
+            'Medium',
+            'Difficult'
+        ][levels[this.level].difficulty];
+        const level = this.level - levelBegins[levels[this.level].difficulty] + 1;
+        const text = add.text(100, 10, `Difficulty: ${difficulty}  Level: ${level}`, {
+            fontSize: '12px',
+            color: '#000'
+        }).setOrigin(0).setInteractive().on('pointerdown', () => {
+            this.interrupts[event]?.();
+        });
+        this.scene.cameras.main.ignore(text);
+        return () => {
+            text.destroy();
+            this.scene.cameras.remove(uiCamera);
+        };
+    }
+
     async playerFlow() {
         if (await this.chooseMode() == 'single player') {
             await this.chooseDifficulty();
@@ -251,7 +278,9 @@ class Controller {
             const cleanUp = this.drawButton('quit');
             while (true) {
                 this.interpreter.initLevel(this.level);
+                const cleanUp = this.drawDifficulty();
                 const res = await this.drawLevel('solved', 'quit', 'done');
+                cleanUp();
                 if (res == 'quit') {
                     break;
                 }
@@ -281,7 +310,9 @@ class Controller {
         while (true) {
             this.interpreter.initLevel(this.level);
             Object.values(this.players).forEach(p => p.initLevel(this.level));
+            const cleanUp = this.drawDifficulty();
             const res = await this.drawLevel('level', 'quit');
+            cleanUp();
             if (res == 'quit') {
                 break;
             }
