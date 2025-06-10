@@ -54,13 +54,13 @@ class Controller {
         const socket = io();
         const playerOn = (event, listener) => socket.on(event, async (level, id, ...args) => {
             if (level != this.level) {
-                console.log(`socket ${event} level differ:`, this.level, level);
+                console.log(`socket ${event}: level differ:`, this.level, level);
                 this.level = level;
                 this.interrupts.level?.();
                 return;
             }
             if (!this.players[id]) {
-                console.log(`socket ${event} stranger:`, id);
+                console.log(`socket ${event}: stranger:`, id);
                 const e = await socket.emitWithAck('pardon', id);
                 if (!e.ok) {
                     console.log('socket pardon:', e.msg);
@@ -75,32 +75,34 @@ class Controller {
 
         socket.on('ready', level => {
             if (level != this.level) {
-                console.log(`socket ready level differ:`, this.level, level);
+                console.log(`socket ready: level differ:`, this.level, level);
                 this.level = level;
                 this.interrupts.level?.();
                 return;
             }
         });
         socket.on('level', level => {
+            console.log('socket level:', level);
             this.level = level;
-            this.interrupts.level();
+            this.interrupts.level?.();
         });
         socket.on('join', (level, id, name, avatar) => {
             if (level != this.level) {
-                console.log(`socket join level differ:`, this.level, level);
+                console.log(`socket join: level differ:`, this.level, level);
                 this.level = level;
                 this.interrupts.level?.();
                 return;
             }
             if (this.players[id]) {
-                console.log('socket join exist:', id, name, lpc[avatar]);
+                console.log('socket join: exist:', id, name, lpc[avatar]);
                 return;
             }
+            console.log('socket join:', name, lpc[avatar]);
             this.players[id] = new Player(this, { name: name, avatar: avatar });
             this.players[id].initLevel(this.level);
         });
         playerOn('leave', id => {
-            console.log('socket leave', this.players[id].name);
+            console.log('socket leave:', this.players[id].name);
             this.players[id].destroy();
             delete this.players[id];
         });
@@ -128,7 +130,7 @@ class Controller {
         const e = await this.socket.emitWithAck('teach', room);
         this.level = e.level;
         this.players = Object.fromEntries(Object.entries(e.players).map(([id, p]) => [id, new Player(this, p)]));
-        const cleanUp = this.drawButton('quit');
+        const cleanUp = this.drawTeacherUi();
         while (true) {
             Object.values(this.players).forEach(p => p.initLevel(this.level));
             const res = await this.drawLevel('level', 'quit');
@@ -140,6 +142,60 @@ class Controller {
         Object.values(this.players).forEach(p => p.destroy());
         this.socket.disconnect();
         this.socket = null;
+    }
+
+    syncLevel(event) {
+        return (res, err) => {
+            if (err) {
+                console.log(`emit ${event} err:`, err);
+                return;
+            }
+            if (res.ok) {
+                return;
+            }
+            if (res.msg != 'level differ') {
+                console.log(`emit ${event} err:`, res.msg);
+                return;
+            }
+            this.interrupts.level?.();
+        };
+    }
+
+    drawTeacherUi() {
+        const uiCamera = this.scene.cameras.add(10, 10, 80, 40);
+        uiCamera.setBackgroundColor(0xffffff);
+        const { add } = this.scene;
+        const container = add.container(0, 0);
+        let expanded = false;
+        const font = {
+            fontSize: '16px',
+            color: '#000',
+            backgroundColor: '#eee',
+            padding: { x: 10, y: 10 }
+        };
+        let y = 40;
+        container.add(add.text(0, 0, 'menu', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            if (expanded) {
+                expanded = false;
+                uiCamera.setViewport(10, 10, 80, 40);
+            } else {
+                expanded = true;
+                uiCamera.setViewport(10, 10, 200, y);
+            }
+        }));
+        container.add(add.text(0, y, 'skip this level', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            this.socket.emit('skip', this.level, this.syncLevel('skip'));
+        }));
+        y += 40;
+        container.add(add.text(0, y, 'stay in level', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            this.socket.emit('stay', this.level, this.syncLevel('stay'));
+        }));
+        y += 40;
+        this.scene.cameras.main.ignore(container);
+        return () => {
+            container.destroy();
+            this.scene.cameras.remove(uiCamera);
+        };
     }
 
     async chooseRoom() {

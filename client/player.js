@@ -66,26 +66,9 @@ class Player {
         return false;
     }
 
-    listener(event) {
-        return (res, err) => {
-            if (err) {
-                console.log(`emit ${event} err:`, err);
-                return;
-            }
-            if (res.ok) {
-                return;
-            }
-            if (res.msg != 'level differ') {
-                console.log(`emit ${event} err:`, res.msg);
-                return;
-            }
-            this.controller.interrupts?.level();
-        };
-    }
-
     async forward(remote) {
         if (!remote) {
-            this.controller.socket?.emit('forward', this.level, this.row, this.col, this.dir, this.listener('forward'));
+            this.controller.socket?.emit('forward', this.level, this.row, this.col, this.dir, this.controller.syncLevel('forward'));
         }
         const r = this.row + drc[this.dir];
         const c = this.col + drc[this.dir + 1];
@@ -141,7 +124,7 @@ class Player {
 
     async turn(ddir, remote) {
         if (!remote) {
-            this.controller.socket?.emit('turn', this.level, this.row, this.col, this.dir, ddir, this.listener('turn'));
+            this.controller.socket?.emit('turn', this.level, this.row, this.col, this.dir, ddir, this.controller.syncLevel('turn'));
         }
         const prevDir = this.dir;
         this.dir = (this.dir + 4 + ddir) % 4;
