@@ -12,10 +12,6 @@ const io = new Server(server, {
 
 app.use(express.static(path.join(__dirname, '../client')));
 
-app.get('/teacher', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/teacher.html'));
-});
-
 app.get('/:room', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/index.html'));
 });

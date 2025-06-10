@@ -61,6 +61,8 @@ class ComputerDayScene extends Phaser.Scene {
 
         this.controller = new Controller(this);
         if (window.location.pathname.slice(1).startsWith('teacher')) {
+            document.getElementById('phaser').style = 'height:100vh;line-height:0;font-size:0';
+            document.getElementById('scratch-blocks').style = 'height:0px';
             while (true) {
                 await this.controller.teacherFlow();
             }
@@ -69,36 +71,6 @@ class ComputerDayScene extends Phaser.Scene {
         while (true) {
             await this.controller.playerFlow();
         }
-    }
-
-    addTeacherUI() {
-        const uiCamera = this.cameras.add(0, 0, 50, 20);
-        uiCamera.setBackgroundColor(0xffffff);
-        const { add } = this;
-        const container = add.container(0, 0);
-        let expanded = false;
-        const font = {
-            fontSize: '16px',
-            color: '#000'
-        };
-        let y = 40;
-        container.add(add.text(0, 0, 'menu', font).setOrigin(0).setInteractive().on('pointerdown', () => {
-            if (expanded) {
-                expanded = false;
-                uiCamera.setViewport(0, 0, 50, 20);
-            } else {
-                expanded = true;
-                uiCamera.setViewport(0, 0, 200, y);
-            }
-        }));
-        container.add(add.text(0, y, 'show answer', font).setOrigin(0).setInteractive().on('pointerdown', () => {
-        }));
-        y += 30;
-        container.add(add.text(0, y, 'next level', font).setOrigin(0).setInteractive().on('pointerdown', () => {
-            socket.emit('next level');
-        }));
-        y += 30;
-        this.cameras.main.ignore(container);
     }
 
     update() {}

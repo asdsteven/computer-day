@@ -67,8 +67,11 @@ Blockly.OpCode['control_repeat'] = function(block) {
 };
 Blockly.OpCode.greenFlagToCode = function() {
     const workspace = Blockly.getMainWorkspace();
-    const greenFlag = workspace.getBlockById('event_whenflagclicked');
-    return Blockly.OpCode.blockToCode(greenFlag);
+    for (const block of workspace.getAllBlocks()) {
+        if (block.type == 'event_whenflagclicked') {
+            return Blockly.OpCode.blockToCode(block);
+        }
+    }
 };
 
 const workspace = Blockly.inject('scratch-blocks', {
@@ -89,3 +92,5 @@ greenFlag.setDeletable(false);
 greenFlag.initSvg();
 greenFlag.render();
 greenFlag.moveBy(10, 30);
+// workspace.getAllBlocks().forEach(b => b.setDeletable(false));
+// console.log(Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace, true)))

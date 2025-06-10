@@ -89,6 +89,7 @@ const levels = [
     {
         difficulty: 1,
         hint: 'Only one forward / turn block is allowed',
+        answer: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="control_repeat"><statement name="SUBSTACK"><block type="control_repeat"><statement name="SUBSTACK"><block type="forward" deletable="false"></block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">4</field></shadow></value><next><block type="turn_right" deletable="false"></block></next></block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">4</field></shadow></value></block></next></block><block type="turn_left" deletable="false" x="435" y="108"></block></xml>',
         blocks: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="forward" deletable="false"><next><block type="turn_left" deletable="false"><next><block type="turn_right" deletable="false"></block></next></block></next></block></next></block></xml>',
         tiles: [ 'E   '
                , '    '
@@ -99,6 +100,7 @@ const levels = [
     {
         difficulty: 1,
         hint: 'Only one forward / turn block is allowed',
+        answer: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="control_repeat"><statement name="SUBSTACK"><block type="control_repeat"><statement name="SUBSTACK"><block type="forward" deletable="false"></block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">10</field></shadow></value><next><block type="turn_right" deletable="false"></block></next></block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">4</field></shadow></value></block></next></block><block type="turn_left" deletable="false" x="141" y="100"></block></xml>',
         blocks: '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="forward" deletable="false"><next><block type="turn_left" deletable="false"><next><block type="turn_right" deletable="false"></block></next></block></next></block></next></block></xml>',
         tiles: [ 'E      '
                , '       '

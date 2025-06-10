@@ -48,7 +48,7 @@ class Interpreter {
     }
 
     initLevel(level) {
-        const { info, blocks } = levels[level];
+        const { info, blocks, answer } = levels[level];
         this.start.x = (worldWidth - info.roomWidth) / 2 - 10;
         this.start.y = (worldHeight - info.roomHeight) / 2;
         this.start.setVisible(true);

@@ -133,6 +133,9 @@ class Controller {
         const cleanUp = this.drawTeacherUi();
         while (true) {
             Object.values(this.players).forEach(p => p.initLevel(this.level));
+            const { answer } = levels[this.level];
+            workspace.clear();
+            Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(answer), workspace);
             const cleanUp = this.drawDifficulty();
             const cleanUp2 = this.drawHint();
             const res = await this.drawLevel('level', 'quit');
@@ -193,6 +196,19 @@ class Controller {
         y += 40;
         container.add(add.text(0, y, 'stay in level', font).setOrigin(0).setInteractive().on('pointerdown', () => {
             this.socket.emit('stay', this.level, this.syncLevel('stay'));
+        }));
+        let showAnswer = false;
+        y += 40;
+        container.add(add.text(0, y, 'show answer', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            if (showAnswer) {
+                showAnswer = false;
+                document.getElementById('phaser').style = 'height:100vh;line-height:0;font-size:0';
+                document.getElementById('scratch-blocks').style = 'height:0px';
+            } else {
+                showAnswer = true;
+                document.getElementById('phaser').style = 'height:calc(100vh - 200px);line-height:0;font-size:0';
+                document.getElementById('scratch-blocks').style = 'height:200px';
+            }
         }));
         y += 40;
         this.scene.cameras.main.ignore(container);
@@ -313,7 +329,6 @@ class Controller {
             }
             cleanUp();
             this.interpreter.destroy();
-            alert('You have completed the challenges!');
             return;
         }
         const avatar = await this.chooseAvatar();
