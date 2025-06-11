@@ -406,6 +406,11 @@
              updateDisplay();
          };
 
+         const socket = io();
+         socket.on('dancemat', (id, symbol) => {
+             signal(id, symbol);
+         });
+
          const nextRound = () => {
              workspace.clear();
              Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(nextHardCodeLevel()), workspace);

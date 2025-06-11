@@ -188,6 +188,10 @@ function onConnection(io, socket) {
         socket.to(room).emit('wander', level, socket.id, x, y);
         return { ok: true };
     });
+
+    socket.on('dancemat', (id, symbol) => {
+        socket.broadcast.emit('dancemat', id, symbol);
+    });
 }
 
 module.exports = { onConnection };
