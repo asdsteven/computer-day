@@ -7,6 +7,19 @@
         <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
         <script src="scratch-blocks/dist/web/horizontal.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+        <xml id="toolbox" style="display: none">
+            <block type="up"></block>
+            <block type="down"></block>
+            <block type="left"></block>
+            <block type="right"></block>
+            <block type="control_repeat">
+                <value name="TIMES">
+                    <shadow type="math_whole_number">
+                        <field name="NUM">4</field>
+                    </shadow>
+                </value>
+            </block>
+        </xml>
         <style>
          #scratch-blocks {
              height: 300px;
@@ -196,6 +209,18 @@
         <button id="next" class="button">Next Round</button>
         <script src="scratch-blocks.js"></script>
         <script>
+         let hardCodeLevel = 0;
+         const hardCodeLevels = [
+             '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="up"><next><block type="down"><next><block type="left"><next><block type="right"></block></next></block></next></block></next></block></next></block></xml>',
+             '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="control_repeat"><statement name="SUBSTACK"><block type="up"></block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">4</field></shadow></value><next><block type="down"><next><block type="left"><next><block type="right"></block></next></block></next></block></next></block></next></block></xml>',
+             '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="control_repeat"><statement name="SUBSTACK"><block type="up"><next><block type="down"><next><block type="left"><next><block type="right"></block></next></block></next></block></next></block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">4</field></shadow></value></block></next></block></xml>',
+             '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="up"><next><block type="control_repeat"><statement name="SUBSTACK"><block type="down"><next><block type="left"></block></next></block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">5</field></shadow></value><next><block type="right"></block></next></block></next></block></next></block></xml>'
+         ];
+
+         const nextHardCodeLevel = () => {
+             return hardCodeLevels[hardCodeLevel++];
+         };
+
          const workspace = Blockly.inject('scratch-blocks', {
              collapse: false,
              comments: false,
@@ -204,14 +229,13 @@
              media: 'scratch-blocks/media/',
              scrollbars: true,
              sounds: false,
-             toolbox: 123,
+             toolbox: document.getElementById('toolbox'),
+             /* toolbox: 123, */
              trashcan: false
          });
+
          workspace.clear();
          Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom('<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="up"><next><block type="down"><next><block type="left"></block></next></block></next></block></next></block></xml>'), workspace);
-         workspace.zoomToFit();
-         workspace.setScale(workspace.scale * 0.8);
-         workspace.scrollCenter();
 
          function flatten(opcodes) {
              const readId = (i) => {
@@ -285,7 +309,7 @@
 
          reset();
 
-         let code = flatten(Blockly.OpCode.greenFlagToCode());
+         let code = '';
 
          const updateDisplay = () => {
              for (const id in players) {
@@ -323,7 +347,7 @@
 
                  players[id].progress++;
                  players[id].score += 10 + players[id].accum;
-                 players[id].accum++;
+                 players[id].accum += 2;
                  if (players[id].progress >= code.length) {
                      const e = document.querySelector(`#player-${id}`);
                      e.classList.add('done');
@@ -344,13 +368,25 @@
              updateDisplay();
          };
 
-         document.querySelector('#next').addEventListener('click', (event) => {
+         const nextRound = () => {
+             workspace.clear();
+             Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(nextHardCodeLevel()), workspace);
+             workspace.zoomToFit();
+             workspace.setScale(workspace.scale * 0.8);
+             workspace.scrollCenter();
+             code = flatten(Blockly.OpCode.greenFlagToCode())
              for (const id in players) {
                  const e = document.querySelector(`#player-${id}`);
                  e.classList.remove('done');
              }
              reset();
              updateDisplay();
+         };
+
+         nextRound();
+
+         document.querySelector('#next').addEventListener('click', (event) => {
+             nextRound();
          });
 
          const keys = {
