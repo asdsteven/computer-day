@@ -49,12 +49,18 @@
          #players>div>div:last-child {
              margin-right: 10px;
          }
-         #players>div>div h3 {
-             font-size: 1.5em;
-         }
          #players>div>div>div {
              width: 100%;
              display: flex;
+         }
+         #players>div>div>div>h3 {
+             font-size: 1.5em;
+         }
+         #players>div>div>div>span {
+             flex: 1;
+             display: flex;
+             justify-content: flex-end;
+             align-items: center;
          }
          #players>div>div>div>div {
              flex: 1;
@@ -131,7 +137,15 @@
         <div id="players">
             <div>
                 <div id="player-b">
-                    <h3>Player B</h3>
+                    <div>
+                        <span></span>
+                        <h3>Player B</h3>
+                        <span>
+                            swap with
+                            <button id="swap-bc" class="button">C</button>
+                            <button id="swap-bd" class="button">D</button>
+                        </span>
+                    </div>
                     <div>
                         <div>
                             <div>
@@ -149,7 +163,14 @@
                     </div>
                 </div>
                 <div id="player-c">
-                    <h3>Player C</h3>
+                    <div>
+                        <span></span>
+                        <h3>Player C</h3>
+                        <span>
+                            swap with
+                            <button id="swap-cd" class="button">D</button>
+                        </span>
+                    </div>
                     <div>
                         <div>
                             <div>
@@ -169,7 +190,16 @@
             </div>
             <div>
                 <div id="player-a">
-                    <h3>Player A</h3>
+                    <div>
+                        <span></span>
+                        <h3>Player A</h3>
+                        <span>
+                            swap with
+                            <button id="swap-ab" class="button">B</button>
+                            <button id="swap-ac" class="button">C</button>
+                            <button id="swap-ad" class="button">D</button>
+                        </span>
+                    </div>
                     <div>
                         <div>
                             <div>
@@ -187,7 +217,11 @@
                     </div>
                 </div>
                 <div id="player-d">
-                    <h3>Player D</h3>
+                    <div>
+                        <span></span>
+                        <h3>Player D</h3>
+                        <span></span>
+                    </div>
                     <div>
                         <div>
                             <div>
@@ -320,6 +354,14 @@
                  const e = document.querySelector(`#player-${id} .score`);
                  e.textContent = `${players[id].score}`;
              }
+             for (const id in players) {
+                 const e = document.querySelector(`#player-${id}`);
+                 if (players[id].progress >= code.length) {
+                     e.classList.add('done');
+                 } else {
+                     e.classList.remove('done');
+                 }
+             }
          };
 
          updateDisplay();
@@ -348,10 +390,6 @@
                  players[id].progress++;
                  players[id].score += 10 + players[id].accum;
                  players[id].accum += 2;
-                 if (players[id].progress >= code.length) {
-                     const e = document.querySelector(`#player-${id}`);
-                     e.classList.add('done');
-                 }
              } else {
                  const e = document.querySelector(`#player-${id} .dscore`);
                  e.textContent = `-5`;
@@ -389,6 +427,14 @@
              nextRound();
          });
 
+         for (const id of ['ab','ac','ad','bc','bd','cd']) {
+             document.getElementById(`swap-${id}`).addEventListener('click', (event) => {
+                 console.log(id);
+                 [players[id[0]], players[id[1]]] = [players[id[1]], players[id[0]]];
+                 updateDisplay();
+             });
+         }
+
          const keys = {
              ArrowUp: document.querySelectorAll('.up'),
              ArrowDown: document.querySelectorAll('.down'),
@@ -399,8 +445,8 @@
          document.addEventListener('keydown', (event) => {
              if (keys[event.key]) {
                  keys[event.key].forEach(e => e.classList.add('active'));
+                 signal('a', symbols[event.key]);
              }
-             signal('a', symbols[event.key]);
          });
 
          document.addEventListener('keyup', (event) => {

@@ -58,7 +58,7 @@ Blockly.OpCode['up'] = function(block) {
     return `^"${block.id}"`;
 };
 Blockly.OpCode['down'] = function(block) {
-    return `^"${block.id}"`;
+    return `v"${block.id}"`;
 };
 Blockly.OpCode['left'] = function(block) {
     return `<"${block.id}"`;
