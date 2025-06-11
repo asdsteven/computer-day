@@ -69,12 +69,17 @@
              align-items: center;
              justify-content: center;
          }
+         #scratch-blocks {
+             display: none;
+         }
          .score {
+             display: none;
              flex: 1;
              font-size: 4em;
              white-space: nowrap;
          }
          .cursor {
+             display: none;
              flex: 1;
              font-size: 2em;
              white-space: nowrap;
@@ -423,11 +428,6 @@
              updateDisplay();
          };
 
-         const socket = io();
-         socket.on('dancemat', (id, symbol) => {
-             signal(id, symbol);
-         });
-
          const nextRound = () => {
              workspace.clear();
              Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(nextHardCodeLevel()), workspace);
@@ -465,10 +465,12 @@
              ArrowRight: document.querySelectorAll('.right')
          };
 
+         const socket = io();
+
          document.addEventListener('keydown', (event) => {
              /* if (keys[event.key]) {
               *     keys[event.key].forEach(e => e.classList.add('active'));
-              *     signal('a', symbols[event.key]);
+              *     socket.emit('dancemat', 'b', symbols[event.key]);
               * } */
          });
 
@@ -477,7 +479,6 @@
               *     keys[event.key].forEach(e => e.classList.remove('active'));
               * } */
          });
-
          const gamepadSymbols = {
              4: '^',
              6: 'v',
@@ -517,7 +518,7 @@
                              // pressed
                              if (gamepadSymbols[index]) {
                                  buttonState[index].confirmed = true;
-                                 signal(id, gamepadSymbols[index]);
+                                 socket.emit('dancemat', id, gamepadSymbols[index]);
                              }
                          }
                      } else {
@@ -548,7 +549,7 @@
                          index: e.gamepad.index,
                          buttonState: {}
                      };
-                     document.querySelector(`#player-${id} .keys`).classList.remove('hidden');
+                     updateDisplay();
                      console.log('link', e.gamepad.index, 'to player', id);
                      break;
                  }
@@ -560,7 +561,7 @@
              for (const id of 'abcd') {
                  if (gamepads[id]?.index == e.gamepad.index) {
                      gamepads[id] = null;
-                     document.querySelector(`#player-${id} .keys`).classList.add('hidden');
+                     updateDisplay();
                      console.log('unlink', e.gamepad.index, 'from player', id);
                      break;
                  }
