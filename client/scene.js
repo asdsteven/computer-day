@@ -91,3 +91,16 @@ const game = new Phaser.Game({
         }
     }
 });
+
+const workspace = Blockly.inject('scratch-blocks', {
+    collapse: false,
+    comments: false,
+    collapse: false,
+    disable: true,
+    media: 'scratch-blocks/media/',
+    scrollbars: true,
+    sounds: false,
+    toolbox: document.getElementById('toolbox'),
+    trashcan: true
+});
+

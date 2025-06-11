@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <title>Computer Day</title>
+        <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+        <script src="scratch-blocks/dist/web/horizontal.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+        <style>
+         #scratch-blocks {
+             height: 300px;
+         }
+         #players {
+             height: calc(100vh - 300px);
+             display: flex;
+             flex-direction: column;
+         }
+         #players>div {
+             flex: 1;
+             display: flex;
+         }
+         #players>div>div {
+             flex: 1;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             border: 1px solid black;
+             border-radius: 5px;
+             margin-left: 10px;
+             margin-top: 10px;
+         }
+         #players>div:last-child>div {
+             margin-bottom: 10px;
+         }
+         #players>div>div:last-child {
+             margin-right: 10px;
+         }
+         #players>div>div h3 {
+             font-size: 1.5em;
+         }
+         #players>div>div>div {
+             width: 100%;
+             display: flex;
+         }
+         #players>div>div>div>div {
+             flex: 1;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             justify-content: center;
+         }
+         .score {
+             flex: 1;
+             font-size: 4em;
+             white-space: nowrap;
+         }
+         .cursor {
+             flex: 1;
+             font-size: 2em;
+             white-space: nowrap;
+         }
+         @keyframes shrinkText {
+             from {
+                 font-size: 3em;
+             }
+             to {
+                 font-size: 0;
+             }
+         }
+         .dscore {
+             font-size: 3em;
+         }
+         .increase {
+             color: green;
+         }
+         .decrease {
+             color: red;
+         }
+         #players>div>div>div>div>div {
+             display: grid;
+             grid-template-columns: 40px 40px 40px;
+             grid-template-rows: 40px 40px 40px;
+             gap: 0;
+         }
+         #players>div>div>div>div>div>div {
+             background: grey;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             font-size: 24px;
+             font-weight: bold;
+             color: white;
+             border-radius: 50px;
+         }
+         #players>div>div>div>div>div>div.active {
+             background: green;
+         }
+         .done {
+             font-weight: bold;
+             color: green;
+             border-color: green;
+             background-color: lightgreen;
+         }
+         .up { grid-column: 2; grid-row: 1; }
+         .left { grid-column: 1; grid-row: 2; }
+         .right { grid-column: 3; grid-row: 2; }
+         .down { grid-column: 2; grid-row: 3; }
+         #next {
+             position: fixed;
+             top: 0;
+             right: 0;
+         }
+        </style>
+    </head>
+    <body>
+        <div id="scratch-blocks" style="height:300px"></div>
+        <div id="players">
+            <div>
+                <div id="player-b">
+                    <h3>Player B</h3>
+                    <div>
+                        <div>
+                            <div>
+                                <div class="up">^</div>
+                                <div class="left"><</div>
+                                <div class="right">></div>
+                                <div class="down">v</div>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="score">35742</span>
+                            <span class="cursor">11 / 33</span>
+                        </div>
+                        <div><span class="dscore"></span></div>
+                    </div>
+                </div>
+                <div id="player-c">
+                    <h3>Player C</h3>
+                    <div>
+                        <div>
+                            <div>
+                                <div class="up">^</div>
+                                <div class="left"><</div>
+                                <div class="right">></div>
+                                <div class="down">v</div>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="score">35742</span>
+                            <span class="cursor">11 / 33</span>
+                        </div>
+                        <div><span class="dscore"></span></div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div id="player-a">
+                    <h3>Player A</h3>
+                    <div>
+                        <div>
+                            <div>
+                                <div class="up">^</div>
+                                <div class="left"><</div>
+                                <div class="right">></div>
+                                <div class="down">v</div>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="score">35742</span>
+                            <span class="cursor">11 / 33</span>
+                        </div>
+                        <div><span class="dscore"></span></div>
+                    </div>
+                </div>
+                <div id="player-d">
+                    <h3>Player D</h3>
+                    <div>
+                        <div>
+                            <div>
+                                <div class="up">^</div>
+                                <div class="left"><</div>
+                                <div class="right">></div>
+                                <div class="down">v</div>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="score">35742</span>
+                            <span class="cursor">11 / 33</span>
+                        </div>
+                        <div><span class="dscore"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button id="next" class="button">Next Round</button>
+        <script src="scratch-blocks.js"></script>
+        <script>
+         const workspace = Blockly.inject('scratch-blocks', {
+             collapse: false,
+             comments: false,
+             collapse: false,
+             disable: true,
+             media: 'scratch-blocks/media/',
+             scrollbars: true,
+             sounds: false,
+             toolbox: 123,
+             trashcan: false
+         });
+         workspace.clear();
+         Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom('<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="up"><next><block type="down"><next><block type="left"></block></next></block></next></block></next></block></xml>'), workspace);
+         workspace.zoomToFit();
+         workspace.setScale(workspace.scale * 0.8);
+         workspace.scrollCenter();
+
+         function flatten(opcodes) {
+             const readId = (i) => {
+                 let id = '';
+                 // opcodes[i] == '"'
+                 for (i++; opcodes[i] != '"'; i++) {
+                     id += opcodes[i];
+                 }
+                 return i + 1;
+             };
+             const readInt = (i) => {
+                 let digits = '';
+                 while (/\d/.test(opcodes[i])) {
+                     digits += opcodes[i];
+                     i++;
+                 }
+                 const n = parseInt(digits);
+                 return [i, n];
+             };
+             const stack = [];
+             let result = '';
+             for (let i = 0; i < opcodes.length; ) {
+                 const c = opcodes[i];
+                 if (c == '#') {
+                     i = readId(i + 1);
+                 } else if (c == '^') {
+                     i = readId(i + 1);
+                     result += c;
+                 } else if (c == '<') {
+                     i = readId(i + 1);
+                     result += c;
+                 } else if (c == '>') {
+                     i = readId(i + 1);
+                     result += c;
+                 } else if (c == 'v') {
+                     i = readId(i + 1);
+                     result += c;
+                 } else if (c == '(') {
+                     const [begin, n] = readInt(i + 1);
+                     i = readId(begin);
+                     stack.push([begin, n]);
+                 } else if (c == ')') {
+                     const [begin, n] = stack.pop();
+                     if (n == 1) {
+                         i++;
+                     } else {
+                         i = readId(begin);
+                         stack.push([begin, n - 1]);
+                     }
+                 }
+             }
+             return result;
+         }
+
+         const players = {
+             a: {},
+             b: {},
+             c: {},
+             d: {}
+         };
+
+         const reset = () => {
+             for (const id in players) {
+                 players[id] = {
+                     progress: 0,
+                     score: 0,
+                     accum: 0
+                 };
+             }
+         };
+
+         reset();
+
+         let code = flatten(Blockly.OpCode.greenFlagToCode());
+
+         const updateDisplay = () => {
+             for (const id in players) {
+                 const e = document.querySelector(`#player-${id} .cursor`);
+                 e.textContent = `${players[id].progress} / ${code.length}`;
+             }
+             for (const id in players) {
+                 const e = document.querySelector(`#player-${id} .score`);
+                 e.textContent = `${players[id].score}`;
+             }
+         };
+
+         updateDisplay();
+
+         const symbols = {
+             ArrowUp: '^',
+             ArrowDown: 'v',
+             ArrowLeft: '<',
+             ArrowRight: '>'
+         };
+
+         const signal = (id, symbol) => {
+             if (players[id].progress >= code.length) {
+                 return;
+             }
+             if (code[players[id].progress] == symbol) {
+                 const e = document.querySelector(`#player-${id} .dscore`);
+                 e.textContent = `+${10 + players[id].accum}`;
+                 e.classList.add('increase');
+                 e.classList.remove('decrease');
+                 e.style.animation = 'none'; // Reset animation
+                 setTimeout(() => {
+                     e.style.animation = 'shrinkText 1s linear forwards';
+                 }, 10); // Small delay to ensure the restart
+
+                 players[id].progress++;
+                 players[id].score += 10 + players[id].accum;
+                 players[id].accum++;
+                 if (players[id].progress >= code.length) {
+                     const e = document.querySelector(`#player-${id}`);
+                     e.classList.add('done');
+                 }
+             } else {
+                 const e = document.querySelector(`#player-${id} .dscore`);
+                 e.textContent = `-5`;
+                 e.classList.remove('increase');
+                 e.classList.add('decrease');
+                 e.style.animation = 'none'; // Reset animation
+                 setTimeout(() => {
+                     e.style.animation = 'shrinkText 1s linear forwards';
+                 }, 10); // Small delay to ensure the restart
+
+                 players[id].accum = 0;
+                 players[id].score -= 5;
+             }
+             updateDisplay();
+         };
+
+         document.querySelector('#next').addEventListener('click', (event) => {
+             for (const id in players) {
+                 const e = document.querySelector(`#player-${id}`);
+                 e.classList.remove('done');
+             }
+             reset();
+             updateDisplay();
+         });
+
+         const keys = {
+             ArrowUp: document.querySelectorAll('.up'),
+             ArrowDown: document.querySelectorAll('.down'),
+             ArrowLeft: document.querySelectorAll('.left'),
+             ArrowRight: document.querySelectorAll('.right')
+         };
+
+         document.addEventListener('keydown', (event) => {
+             if (keys[event.key]) {
+                 keys[event.key].forEach(e => e.classList.add('active'));
+             }
+             signal('a', symbols[event.key]);
+         });
+
+         document.addEventListener('keyup', (event) => {
+             if (keys[event.key]) {
+                 keys[event.key].forEach(e => e.classList.remove('active'));
+             }
+         });
+        </script>
+    </body>
+</html>

@@ -171,17 +171,9 @@ class Controller {
     drawTeacherUi() {
         const uiCamera = this.scene.cameras.add(10, 10, 80, 40);
         uiCamera.setBackgroundColor(0xffffff);
-        const { add } = this.scene;
-        const container = add.container(0, 0);
         let expanded = false;
-        const font = {
-            fontSize: '16px',
-            color: '#000',
-            backgroundColor: '#eee',
-            padding: { x: 10, y: 10 }
-        };
         let y = 40;
-        container.add(add.text(0, 0, 'menu', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+        const toggleMenu = () => {
             if (expanded) {
                 expanded = false;
                 uiCamera.setViewport(10, 10, 80, 40);
@@ -189,16 +181,29 @@ class Controller {
                 expanded = true;
                 uiCamera.setViewport(10, 10, 200, y);
             }
+        };
+        const { add } = this.scene;
+        const container = add.container(0, 0);
+        const font = {
+            fontSize: '16px',
+            color: '#000',
+            backgroundColor: '#eee',
+            padding: { x: 10, y: 10 }
+        };
+        container.add(add.text(0, 0, 'menu', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            toggleMenu();
         }));
         container.add(add.text(0, y, 'skip this level', font).setOrigin(0).setInteractive().on('pointerdown', () => {
             this.socket.emit('skip', this.level, this.syncLevel('skip'));
+            toggleMenu();
         }));
         y += 40;
         container.add(add.text(0, y, 'stay in level', font).setOrigin(0).setInteractive().on('pointerdown', () => {
             this.socket.emit('stay', this.level, this.syncLevel('stay'));
+            toggleMenu();
         }));
-        let showAnswer = false;
         y += 40;
+        let showAnswer = false;
         container.add(add.text(0, y, 'show answer', font).setOrigin(0).setInteractive().on('pointerdown', () => {
             if (showAnswer) {
                 showAnswer = false;
@@ -209,6 +214,23 @@ class Controller {
                 document.getElementById('phaser').style = 'height:calc(100vh - 200px);line-height:0;font-size:0';
                 document.getElementById('scratch-blocks').style = 'height:200px';
             }
+        }));
+        y += 40;
+        container.add(add.text(0, y, 'Kahoot P1-2', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            window.open('https://create.kahoot.it/share/computer-day-p1-2/c14acb08-b73f-495d-b8f8-0be862c4fdbc', '_blank');
+        }));
+        y += 40;
+        container.add(add.text(0, y, 'Kahoot P3-4', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            window.open('https://create.kahoot.it/share/computer-day-p3-4/cd4355d8-bcc9-4536-ab41-7d9f144425c8', '_blank');
+        }));
+        y += 40;
+        container.add(add.text(0, y, 'Kahoot P5-6', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            window.open('https://create.kahoot.it/share/computer-day-p5-6/e14bf1c9-408a-4072-be72-5b025ae0a5ca', '_blank');
+        }));
+        y += 40;
+        container.add(add.text(0, y, 'Show QR Code', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            ;
+            alert('will be available tomorrow');
         }));
         y += 40;
         this.scene.cameras.main.ignore(container);
@@ -274,7 +296,7 @@ class Controller {
             'Difficult'
         ][levels[this.level].difficulty];
         const level = this.level - levelBegins[levels[this.level].difficulty] + 1;
-        const text = add.text(worldWidth / 2, (worldHeight - roomHeight) / 2 - tileHeight * 2, `Difficulty: ${difficulty}  Level: ${this.level}`, {
+        const text = add.text(worldWidth / 2, (worldHeight - roomHeight) / 2 - tileHeight * 2, `Difficulty: ${difficulty}  Level: ${level}`, {
             fontSize: '12px',
             color: '#000',
             stroke: '#fff',

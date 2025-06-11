@@ -30,6 +30,10 @@ const motionBlock = (id, svg) => {
 motionBlock('forward', 'shoe-prints-solid.svg');
 motionBlock('turn_left', 'arrow-rotate-left-solid.svg');
 motionBlock('turn_right', 'arrow-rotate-right-solid.svg');
+motionBlock('up', 'arrow-up-solid.svg');
+motionBlock('down', 'arrow-down-solid.svg');
+motionBlock('left', 'arrow-left-solid.svg');
+motionBlock('right', 'arrow-right-solid.svg');
 
 Blockly.OpCode = new Blockly.Generator('OpCode');
 Blockly.OpCode.INDENT = '';
@@ -48,6 +52,18 @@ Blockly.OpCode['turn_left'] = function(block) {
     return `<"${block.id}"`;
 };
 Blockly.OpCode['turn_right'] = function(block) {
+    return `>"${block.id}"`;
+};
+Blockly.OpCode['up'] = function(block) {
+    return `^"${block.id}"`;
+};
+Blockly.OpCode['down'] = function(block) {
+    return `^"${block.id}"`;
+};
+Blockly.OpCode['left'] = function(block) {
+    return `<"${block.id}"`;
+};
+Blockly.OpCode['right'] = function(block) {
     return `>"${block.id}"`;
 };
 Blockly.OpCode['math_whole_number'] = function(block) {
@@ -74,23 +90,11 @@ Blockly.OpCode.greenFlagToCode = function() {
     }
 };
 
-const workspace = Blockly.inject('scratch-blocks', {
-    collapse: false,
-    comments: false,
-    collapse: false,
-    disable: true,
-    media: 'scratch-blocks/media/',
-    scrollbars: true,
-    sounds: false,
-    toolbox: document.getElementById('toolbox'),
-    trashcan: true
-});
-
-const greenFlag = workspace.newBlock('event_whenflagclicked', 'event_whenflagclicked');
-greenFlag.setMovable(false);
-greenFlag.setDeletable(false);
-greenFlag.initSvg();
-greenFlag.render();
-greenFlag.moveBy(10, 30);
+/* const greenFlag = workspace.newBlock('event_whenflagclicked', 'event_whenflagclicked');
+ * greenFlag.setMovable(false);
+ * greenFlag.setDeletable(false);
+ * greenFlag.initSvg();
+ * greenFlag.render();
+ * greenFlag.moveBy(10, 30); */
 // workspace.getAllBlocks().forEach(b => b.setDeletable(false));
 // console.log(Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace, true)))
