@@ -61,6 +61,7 @@
              display: flex;
              justify-content: flex-end;
              align-items: center;
+             visibility: hidden;
          }
          #players>div>div>div>div {
              flex: 1;
@@ -125,7 +126,7 @@
          .left { grid-column: 1; grid-row: 2; }
          .right { grid-column: 3; grid-row: 2; }
          .down { grid-column: 2; grid-row: 3; }
-         #next {
+         #buttons {
              position: fixed;
              top: 0;
              right: 0;
@@ -243,7 +244,11 @@
                 </div>
             </div>
         </div>
-        <button id="next" class="button">Next Round</button>
+        <div id="buttons">
+            <button id="easy" class="button">Easy</button>
+            <button id="medium" class="button">Medium</button>
+            <button id="difficult" class="button">Difficult</button>
+        </div>
         <script src="scratch-blocks.js"></script>
         <script>
          let hardCodeLevel = 0;
@@ -258,6 +263,108 @@
              return hardCodeLevels[hardCodeLevel++];
          };
 
+         const randBetween = (a, b) => {
+             return Math.floor(Math.random() * (b - a + 1)) + a;
+         };
+
+         const randDir = () => {
+             return dir = ['up','down','left','right'][randBetween(0, 3)];
+         };
+
+         const genRepeats = (n, c) => {
+             const front = [];
+             const back = [];
+             front.push(`<block type="control_repeat"><statement name="SUBSTACK"><block type="${randDir()}">`);
+             back.unshift(`</block></statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">${c}</field></shadow></value>`);
+             for (let i = 1; i < n; i++) {
+                 front.push(`<next><block type="${randDir()}">`);
+                 back.unshift('</block></next>');
+             }
+             return front.join('') + back.join('');
+         };
+
+         const nextEasyLevel = () => {
+             const a = randBetween(2, 4);
+             const b = randBetween(2, 5);
+             const c = Math.ceil(randBetween(10, 15) / b);
+             const d = randBetween(2, 4);
+             const front = ['<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30">'];
+             const back = ['</block></xml>'];
+             for (let i = 0; i < a; i++) {
+                 front.push(`<next><block type="${randDir()}">`);
+                 back.unshift('</block></next>');
+             }
+             front.push(`<next>${genRepeats(b, c)}`);
+             back.unshift('</block></next>');
+             for (let i = 0; i < d; i++) {
+                 front.push(`<next><block type="${randDir()}">`);
+                 back.unshift('</block></next>');
+             }
+             return front.join('') + back.join('');
+         };
+
+         const nextMediumLevel = () => {
+             const a = randBetween(1, 3);
+             const b = randBetween(2, 4);
+             const c = Math.ceil(randBetween(8, 12) / b);
+             const d = randBetween(1, 3);
+             const e = randBetween(2, 4);
+             const f = Math.ceil(randBetween(8, 12) / e);
+             const g = randBetween(1, 3);
+             const front = ['<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30">'];
+             const back = ['</block></xml>'];
+             for (let i = 0; i < a; i++) {
+                 front.push(`<next><block type="${randDir()}">`);
+                 back.unshift('</block></next>');
+             }
+             front.push(`<next>${genRepeats(b, c)}`);
+             back.unshift('</block></next>');
+             for (let i = 0; i < d; i++) {
+                 front.push(`<next><block type="${randDir()}">`);
+                 back.unshift('</block></next>');
+             }
+             front.push(`<next>${genRepeats(e, f)}`);
+             back.unshift('</block></next>');
+             for (let i = 0; i < g; i++) {
+                 front.push(`<next><block type="${randDir()}">`);
+                 back.unshift('</block></next>');
+             }
+             return front.join('') + back.join('');
+         };
+
+         const nextDifficultLevel = () => {
+             const a = randBetween(1, 3);
+             const b = randBetween(2, 3);
+             const c = Math.ceil(randBetween(6, 9) / b);
+             const d = randBetween(1, 2);
+             const e = randBetween(2, 3);
+             const f = Math.ceil(randBetween(6, 9) / e);
+             const g = randBetween(1, 3);
+             const h = Math.ceil(randBetween(42, 63) / (b * c + d + e * f));
+             const front = ['<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30">'];
+             const back = ['</block></xml>'];
+             for (let i = 0; i < a; i++) {
+                 front.push(`<next><block type="${randDir()}">`);
+                 back.unshift('</block></next>');
+             }
+             front.push(`<next><block type="control_repeat"><statement name="SUBSTACK">${genRepeats(b, c)}`);
+             back.unshift('</block></next>');
+             const front2 = [];
+             const back2 = ['</block>'];
+             for (let i = 0; i < d; i++) {
+                 front2.push(`<next><block type="${randDir()}">`);
+                 back2.unshift('</block></next>');
+             }
+             front2.push(`<next>${genRepeats(e, f)}`);
+             back2.unshift(`</block></next>`);
+             front.push(front2.join('') + back2.join('') + `</statement><value name="TIMES"><shadow type="math_whole_number"><field name="NUM">${h}</field></shadow></value>`);
+             for (let i = 0; i < g; i++) {
+                 front.push(`<next><block type="${randDir()}">`);
+                 back.unshift('</block></next>');
+             }
+             return front.join('') + back.join('');
+         };
+
          const workspace = Blockly.inject('scratch-blocks', {
              collapse: false,
              comments: false,
@@ -266,13 +373,10 @@
              media: 'scratch-blocks/media/',
              scrollbars: true,
              sounds: false,
-             toolbox: document.getElementById('toolbox'),
-             /* toolbox: 123, */
+             /* toolbox: document.getElementById('toolbox'), */
+             toolbox: 123,
              trashcan: false
          });
-
-         workspace.clear();
-         Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom('<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables><block type="event_whenflagclicked" deletable="false" movable="false" x="10" y="30"><next><block type="up"><next><block type="down"><next><block type="left"></block></next></block></next></block></next></block></xml>'), workspace);
 
          function flatten(opcodes) {
              const readId = (i) => {
@@ -428,9 +532,9 @@
              signal(id, symbol);
          });
 
-         const nextRound = () => {
+         const nextRound = (xml) => {
              workspace.clear();
-             Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(nextHardCodeLevel()), workspace);
+             Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(xml), workspace);
              workspace.zoomToFit();
              workspace.setScale(workspace.scale * 0.8);
              workspace.scrollCenter();
@@ -443,10 +547,16 @@
              updateDisplay();
          };
 
-         nextRound();
+         nextRound(nextEasyLevel());
 
-         document.querySelector('#next').addEventListener('click', (event) => {
-             nextRound();
+         document.querySelector('#easy').addEventListener('click', (event) => {
+             nextRound(nextEasyLevel());
+         });
+         document.querySelector('#medium').addEventListener('click', (event) => {
+             nextRound(nextMediumLevel());
+         });
+         document.querySelector('#difficult').addEventListener('click', (event) => {
+             nextRound(nextDifficultLevel());
          });
 
          for (const id of ['ab','ac','ad','bc','bd','cd']) {
@@ -466,16 +576,16 @@
          };
 
          document.addEventListener('keydown', (event) => {
-             /* if (keys[event.key]) {
-              *     keys[event.key].forEach(e => e.classList.add('active'));
-              *     signal('a', symbols[event.key]);
-              * } */
+             if (keys[event.key]) {
+                 keys[event.key].forEach(e => e.classList.add('active'));
+                 signal('a', symbols[event.key]);
+             }
          });
 
          document.addEventListener('keyup', (event) => {
-             /* if (keys[event.key]) {
-              *     keys[event.key].forEach(e => e.classList.remove('active'));
-              * } */
+             if (keys[event.key]) {
+                 keys[event.key].forEach(e => e.classList.remove('active'));
+             }
          });
 
          const gamepadSymbols = {
