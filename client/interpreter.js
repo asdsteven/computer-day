@@ -25,10 +25,13 @@ class Interpreter {
             }
             this.state = 'idle';
             workspace.removeChangeListener(f);
-            this.start.setInteractive().setAlpha(1);
             this.stop.disableInteractive().setAlpha(0.5);
             if (this.player.solved()) {
+                console.log('solved', controller.socket);
+                controller.socket?.emit('solved', controller.level, controller.syncLevel('solved'));
                 controller.interrupts.solved?.();
+            } else {
+                this.start.setInteractive().setAlpha(1);
             }
             this.idleWake?.();
         });
@@ -65,6 +68,8 @@ class Interpreter {
         this.stop.y = (worldHeight - info.roomHeight) / 2 + 60;
         this.stop.setVisible(true);
         this.player.initLevel(level);
+        this.start.setInteractive().setAlpha(1);
+        this.stop.disableInteractive().setAlpha(0.5);
         workspace.clear();
         if (blocks) {
             Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(blocks), workspace);

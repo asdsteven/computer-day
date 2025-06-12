@@ -8,7 +8,7 @@ const { lpc } = require('../client/lpc');
 [['1A', '2A'], ['3A', '3S', 'P4'], ['5A', '5S', '6A', '6S']].forEach((grade, i) => {
     for (const room of grade) {
         rooms[room] = {
-            level: levelBegins[i + 1],
+            level: levelBegins[1], // levelBegins[i + 1],
             players: {},
             struggling: new Set(),
             autoAdvance: true,
@@ -96,6 +96,16 @@ function onConnection(io, socket) {
             players: rooms[room].players
         });
     });
+    teacherOn('back', room => {
+        rooms[room].level = levelBegins[1];
+        const level = rooms[room].level;
+        console.log(shortId, room, 'teacher perform back:', level);
+        rooms[room].autoAdvance = true;
+        cancelAdvance(room);
+        allStruggling(room);
+        io.to(room).emit('level', level);
+        return { ok: true };
+    });
     teacherOn('skip', room => {
         const level = ++rooms[room].level;
         console.log(shortId, room, 'teacher perform skip:', level);
@@ -150,7 +160,7 @@ function onConnection(io, socket) {
         }
         return { ok: false, msg: `lost: ${id}` };
     });
-    playerOn('solve', room => {
+    playerOn('solved', room => {
         rooms[room].struggling.delete(socket.id);
         if (rooms[room].struggling.size > 0 || !rooms[room].autoAdvance) {
             return;

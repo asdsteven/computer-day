@@ -18,6 +18,9 @@ class ComputerDayScene extends Phaser.Scene {
         loadImage('colortileG');
         loadImage('colortileB');
         loadImage('colortileY');
+        for (const room of ['1A','2A','3A','3S','P4','5A','5S','6A','6S']) {
+            loadImage('qr' + room);
+        }
         this.load.spritesheet('grass', 'assets/grass.png', {
             frameWidth: 16,
             frameHeight: 16
@@ -60,6 +63,13 @@ class ComputerDayScene extends Phaser.Scene {
         }
 
         this.controller = new Controller(this);
+        const controller = this.controller;
+        this.input.on('pointerdown', function (pointer) {
+            console.log('Touch position:', pointer.x, pointer.y);
+            var worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+            console.log('World position:', worldPoint.x, worldPoint.y);
+            controller.interpreter?.player.wander(worldPoint.x, worldPoint.y);
+        });
         if (window.location.pathname.slice(1).startsWith('teacher')) {
             document.getElementById('phaser').style = 'height:100vh;line-height:0;font-size:0';
             document.getElementById('scratch-blocks').style = 'height:0px';

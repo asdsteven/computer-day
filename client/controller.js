@@ -80,6 +80,7 @@ class Controller {
                 this.interrupts.level?.();
                 return;
             }
+            this.drawReady();
         });
         socket.on('level', level => {
             console.log('socket level:', level);
@@ -126,6 +127,7 @@ class Controller {
 
     async teacherFlow() {
         const room = await this.chooseRoom();
+        this.room = room
         this.socket = this.setupSocket();
         const e = await this.socket.emitWithAck('teach', room);
         this.level = e.level;
@@ -229,8 +231,16 @@ class Controller {
         }));
         y += 40;
         container.add(add.text(0, y, 'Show QR Code', font).setOrigin(0).setInteractive().on('pointerdown', () => {
-            ;
-            alert('will be available tomorrow');
+            const x = add.image(worldWidth / 2, worldHeight / 2, 'qr' + this.room)
+                         .setOrigin(0.5).setDepth(9999).setScale(0.3).setInteractive()
+                         .on('pointerdown', () => {
+                             x.destroy();
+            });
+        }));
+        y += 40;
+        container.add(add.text(0, y, 'Back to level 1', font).setOrigin(0).setInteractive().on('pointerdown', () => {
+            this.socket.emit('back', this.level, this.syncLevel('back'));
+            toggleMenu();
         }));
         y += 40;
         this.scene.cameras.main.ignore(container);
@@ -241,7 +251,42 @@ class Controller {
     }
 
     async chooseRoom() {
-        return '1A';
+        const { add, textures } = this.scene;
+        const bg = [];
+        this.redrawGrass();
+        const font = {
+            fontSize: '20px',
+            color: '#000',
+            backgroundColor: '#eee',
+            padding: { x: 20, y: 10 }
+        };
+        this.viewWidth = tileWidth * 9;
+        this.viewHeight = tileHeight * 9;
+        this.initZoom();
+        const mode = await new Promise(resolve => {
+            let x = worldWidth / 2 - 160;
+            let y = worldHeight / 2 - 40;
+            const addButton = (room) => {
+                bg.push(add.text(x, y, room, font)
+                           .setOrigin(0.5).setInteractive().on('pointerdown', () => {
+                               resolve(room);
+                }));
+                x += 80;
+            };
+            addButton('1A');
+            addButton('2A');
+            addButton('3A');
+            addButton('3S');
+            addButton('P4');
+            x = worldWidth / 2 - 160;
+            y = worldHeight / 2 + 40;
+            addButton('5A');
+            addButton('5S');
+            addButton('6A');
+            addButton('6S');
+        });
+        bg.forEach(e => e.destroy());
+        return mode;
     }
 
     async introductory() {
@@ -296,21 +341,34 @@ class Controller {
             'Difficult'
         ][levels[this.level].difficulty];
         const level = this.level - levelBegins[levels[this.level].difficulty] + 1;
-        const text = add.text(worldWidth / 2, (worldHeight - roomHeight) / 2 - tileHeight * 2, `Difficulty: ${difficulty}  Level: ${level}`, {
+        const text = add.text(worldWidth / 2, (worldHeight - roomHeight) / 2 - tileHeight * 2, `Room: ${this.room || 'introductory'} Level: ${level}`, {
             fontSize: '12px',
             color: '#000',
             stroke: '#fff',
             strokeThickness: 2
-        }).setOrigin(0.5, 0).setInteractive().on('pointerdown', () => {
-            this.interrupts[event]?.();
-        });
+        }).setOrigin(0.5, 0);
         return () => {
             text.destroy();
         };
     }
 
+    async drawReady() {
+        for (let count = 10; count >= 0; count--) {
+            const { roomHeight } = levels[this.level].info;
+            const { add } = this.scene;
+            const text = add.text(worldWidth / 2, (worldHeight - roomHeight) / 2 - tileHeight * 1.5, `Advance to next level in ${count}`, {
+                fontSize: '20px',
+                color: '#000',
+                stroke: '#fff',
+                strokeThickness: 4
+            }).setOrigin(0.5, 0).setDepth(9999);
+            await this.delay(1000);
+            text.destroy();
+        }
+    }
+
     drawHint() {
-        const hint = levels[this.level].hint;
+        let hint = levels[this.level].hint;
         if (!hint) {
             return () => {};
         }
@@ -356,6 +414,7 @@ class Controller {
         const avatar = await this.chooseAvatar();
         const name = window.prompt('Enter you name:');
         const room = window.location.pathname.slice(1, 3);
+        this.room = room;
         this.socket = this.setupSocket();
         const e = await this.socket.emitWithAck('join', room, name, avatar);
         if (!e.ok) {

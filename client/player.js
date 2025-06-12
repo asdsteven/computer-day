@@ -43,8 +43,8 @@ class Player {
         this.row = this.info.SR;
         this.col = this.info.SC;
         this.dir = this.info.dir;
-        this.container.x = this.SX + this.col * tileWidth;
-        this.container.y = this.SY + this.row * tileHeight;
+        this.container.x = this.SX + this.col * tileWidth + Math.random() * 10 - 5;
+        this.container.y = this.SY + this.row * tileHeight + Math.random() * 10 - 5;
         this.container.setDepth(this.container.y);
         this.sprite.setFrame((4 - this.dir) % 4 * 9);
     }
@@ -80,16 +80,16 @@ class Player {
                 this.scene.tweens.chain({
                     targets: this.container,
                     tweens: [{
-                        x: this.SX + cc * tileWidth,
-                        y: this.SY + rr * tileHeight,
+                        x: this.SX + cc * tileWidth + Math.random() * 10 - 5,
+                        y: this.SY + rr * tileHeight + Math.random() * 10 - 5,
                         depth: this.SY + rr * tileHeight,
                         duration: 125,
                         onComplete: () => {
                             this.sprite.anims.reverse();
                         }
                     }, {
-                        x: this.SX + this.col * tileWidth,
-                        y: this.SY + this.row * tileHeight,
+                        x: this.SX + this.col * tileWidth + Math.random() * 10 - 5,
+                        y: this.SY + this.row * tileHeight + Math.random() * 10 - 5,
                         depth: this.SY + this.row * tileHeight,
                         duration: 125,
                         onComplete: () => {
@@ -109,8 +109,8 @@ class Player {
         await new Promise(resolve => {
             this.scene.tweens.add({
                 targets: this.container,
-                x: this.SX + this.col * tileWidth,
-                y: this.SY + this.row * tileHeight,
+                x: this.SX + this.col * tileWidth + Math.random() * 10 - 5,
+                y: this.SY + this.row * tileHeight + Math.random() * 10 - 5,
                 depth: this.SY + this.row * tileHeight,
                 duration: 500,
                 onComplete: () => {
@@ -136,5 +136,35 @@ class Player {
         this.sprite.stop();
         this.sprite.setFrame((4 - this.dir) % 4 * 9);
         await this.controller.delay(125);
+    }
+
+    async wander(x, y, remote) {
+        return;
+        if (!remote) {
+            if (!this.solved()) {
+                return;
+            }
+            this.controller.socket?.emit('wander', this.level, x, y, this.controller.syncLevel('wander'));
+        }
+        if (x < this.sprite.x) {
+            this.dir = 3;
+        } else {
+            this.dir = 1;
+        }
+        this.sprite.play(this.sprite.texture.key + ':' + this.dir);
+        await new Promise(resolve => {
+            this.scene.tweens.add({
+                targets: this.container,
+                x: x,
+                y: y,
+                depth: y,
+                duration: Math.sqrt(x*x + y*y) / tileWidth * 125,
+                onComplete: () => {
+                    this.sprite.stop();
+                    this.sprite.setFrame((4 - this.dir) % 4 * 9);
+                    resolve();
+                }
+            });
+        });
     }
 }
